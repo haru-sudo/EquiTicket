@@ -1,0 +1,44 @@
+name: 機能の要望・改善の提案
+description: こうなると便利・ここが使いにくい
+title: "[要望] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提案ありがとうございます。
+        EquiTicket は「外部サービスなし・ZIP を入れるだけで動く」ことを大事にしています。
+        外部 API や有料サービスが必要になる提案は、取り入れられないことがあります。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 困っていること
+      description: "どんな場面で、何に困っているかを書いてください（例: 受付が混んだときに〜）。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: こうなってほしい
+      description: 思いついている解決のしかたがあれば書いてください。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: who
+    attributes:
+      label: 主に使う人
+      multiple: true
+      options:
+        - 来場者
+        - 受付スタッフ
+        - 主催者・管理者
+        - 開発者
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: いまの回避策・ほかの案
+      description: いまどうやってしのいでいるか、ほかに考えた方法があれば。

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>EquiTicket 受付スタッフ用マニュアル</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 14mm; }
+:root { --accent: #1f3a68; --muted: #5f6b76; --line: #d5dadd; --ok: #1f7a3f; --warn: #b77900; --ng: #b32d2e; --gray: #4b5563; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #1f2933; font-family: "IPAPGothic", "IPAGothic", sans-serif; font-size: 10.5pt; line-height: 1.65; }
+h1 { margin: 0 0 2mm; font-size: 20pt; color: var(--accent); }
+h2 { margin: 0 0 4mm; padding: 2mm 3mm; font-size: 14pt; color: #fff; background: var(--accent); border-radius: 2mm; }
+h3 { margin: 5mm 0 2mm; font-size: 11.5pt; color: var(--accent); border-bottom: 0.4mm solid var(--line); padding-bottom: 1mm; }
+p { margin: 0 0 2mm; }
+.lead { color: var(--muted); margin-bottom: 5mm; }
+.page { page-break-after: always; }
+.page:last-child { page-break-after: auto; }
+.cols { display: flex; gap: 6mm; align-items: flex-start; }
+.cols > .text { flex: 1; }
+.cols > .fig { flex: 0 0 62mm; }
+.fig img { width: 100%; border: 0.3mm solid var(--line); border-radius: 2mm; }
+.fig .cap { margin-top: 1mm; font-size: 8.5pt; color: var(--muted); text-align: center; }
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+ol.steps > li { position: relative; margin: 0 0 3mm; padding-left: 9mm; }
+ol.steps > li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0.3mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--accent); color: #fff; font-size: 9pt; font-weight: 700; text-align: center; line-height: 6mm; }
+.kbd { display: inline-block; padding: 0 1.5mm; border: 0.3mm solid #9aa5ae; border-radius: 1mm; background: #f5f7f6; font-size: 9.5pt; white-space: nowrap; }
+.box { margin: 3mm 0; padding: 3mm 4mm; border-radius: 2mm; background: #eef2f8; border-left: 1.2mm solid var(--accent); }
+.box.warn { background: #fff6e0; border-left-color: var(--warn); }
+table.results { width: 100%; border-collapse: collapse; }
+table.results td { padding: 1.5mm 2mm; border-bottom: 0.3mm solid var(--line); vertical-align: top; }
+table.results td.img { width: 44mm; }
+table.results td.img img { width: 42mm; border-radius: 1.5mm; display: block; }
+.tag { display: inline-block; padding: 0.3mm 2mm; border-radius: 1mm; color: #fff; font-weight: 700; font-size: 9.5pt; margin-bottom: 1mm; }
+.tag.ok { background: var(--ok); } .tag.warn { background: var(--warn); } .tag.ng { background: var(--ng); } .tag.gray { background: var(--gray); }
+.small { font-size: 9pt; color: var(--muted); }
+.wide img { width: 100%; border: 0.3mm solid var(--line); border-radius: 2mm; }
+table.faq { width: 100%; border-collapse: collapse; }
+table.faq th, table.faq td { padding: 2mm; border-bottom: 0.3mm solid var(--line); vertical-align: top; text-align: left; }
+table.faq th { width: 48mm; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<section class="page">
+	<h1>受付スタッフ用マニュアル</h1>
+	<p class="lead">体験乗馬の受付で使う「QR チェックイン」と「当日予約（予約のない方の登録）」の手順です。受付を担当する方は、当日までに一度目を通してください。</p>
+
+	<h2>0. はじめに：受付画面を開く</h2>
+	<div class="cols">
+		<div class="text">
+			<ol class="steps">
+				<li>スマートフォンのブラウザー（iPhone は Safari、Android は Chrome）で、サイトのログイン画面（<span class="kbd">サイトのアドレス/wp-admin/</span>）を開きます。</li>
+				<li>配られた受付用のユーザー名とパスワードでログインします。ログインすると「当日ダッシュボード」が開きます。</li>
+				<li>左のメニュー（スマートフォンでは左上の <span class="kbd">≡</span>）から <span class="kbd">体験乗馬</span> → <span class="kbd">受付</span> を開きます。</li>
+			</ol>
+			<div class="box">
+				<b>受付で使うのは次の 2 つの画面だけです。</b><br>
+				・<b>受付</b>：QR コードを読み取って来場を記録する（→ 1・2）<br>
+				・<b>当日予約</b>：予約のない方をその場で登録する（→ 3）
+			</div>
+			<div class="box warn">
+				パスワードは受付スタッフ以外に教えないでください。端末を置いたまま離れるときは、画面を閉じておきましょう。
+			</div>
+		</div>
+		<div class="fig" style="flex-basis:38mm;">
+			<img src="assets/menu-staff.png" alt="">
+			<div class="cap">受付スタッフのメニュー</div>
+		</div>
+	</div>
+
+	<h2 style="margin-top:6mm;">1. QR コードで受付する</h2>
+	<div class="cols">
+		<div class="text">
+			<ol class="steps">
+				<li><span class="kbd">カメラで読み取る</span> を押します。初回だけ「カメラの使用を許可しますか？」と聞かれるので <b>許可</b> を押します。</li>
+				<li>来場者に整理券（スマートフォンの画面か、確認メールの QR）を見せてもらい、<b>白い枠の中</b>に QR が収まるように写します。枠の半分くらいの大きさに写すと読み取りやすくなります。</li>
+				<li>読み取ると、カメラ映像の上に結果が大きく表示されます（次のページ）。<b>緑の「✓ 受付しました」</b>なら受付完了です。</li>
+				<li>表示された<b>名前・人数・乗る馬</b>を来場者と確認し、<b>集金額</b>を受け取って、乗る馬の列へ案内します。</li>
+				<li>結果は数秒で消え、次の人をそのまま読み取れます。急ぐときは結果をタップすると、すぐ次へ進めます。</li>
+			</ol>
+		</div>
+		<div class="fig">
+			<img src="assets/scan-start.png" alt="">
+			<div class="cap">受付画面（カメラを起動する前）</div>
+		</div>
+	</div>
+</section>
+
+<section class="page">
+	<h2>2. 読み取った結果と、その後の対応</h2>
+	<p>結果は色で見分けられます。緑以外のときは、下の対応をしてください。</p>
+	<table class="results">
+		<tr>
+			<td class="img"><img src="assets/flash-ok.png" alt=""></td>
+			<td><span class="tag ok">緑：受付しました</span><br>受付完了です。名前・人数・乗る馬を確認し、表示された金額を集金して案内します。</td>
+		</tr>
+		<tr>
+			<td class="img"><img src="assets/flash-already.png" alt=""></td>
+			<td><span class="tag warn">オレンジ：使用済み</span><br>この整理券はすでに受付済みです（受付した時刻が出ます）。同じ QR をもう一度読んだだけなら、そのまま案内して構いません。<b>別の人が同じ QR を見せている場合</b>は、名前を確認し、責任者に相談してください。</td>
+		</tr>
+		<tr>
+			<td class="img"><img src="assets/flash-no_show.png" alt=""></td>
+			<td><span class="tag gray">グレー：時間切れ</span><br>受付の締切を過ぎたため、無断キャンセルとして枠の空きに戻された予約です。画面の下に出る <span class="kbd">それでも来場済みにする</span> を押すと受付できます（枠がいっぱいのときは責任者に相談）。<br><span class="tag gray" style="margin-top:2mm;">グレー：取消済み</span><br>本人が取り消した予約です。乗りたい場合は「3. 当日予約」で登録し直してください。</td>
+		</tr>
+		<tr>
+			<td class="img"><img src="assets/flash-not_found.png" alt=""></td>
+			<td><span class="tag ng">赤：該当なし／読み取れませんでした</span><br>この体験乗馬の整理券ではないか、うまく読み取れていません。もう一度読み取り、それでもだめなら下の「氏名で探す」で受付します。</td>
+		</tr>
+	</table>
+
+	<h3>QR が読み取れないときは「氏名で探す」</h3>
+	<div class="cols">
+		<div class="text">
+			<ol class="steps">
+				<li>受付画面を下へスクロールし、<b>氏名で探す</b> に名前の一部（例：名字だけ）を入れて <span class="kbd">検索</span> を押します。</li>
+				<li>当日の予約から見つかった人が、時間枠・乗る馬・人数と一緒に表示されます。</li>
+				<li>本人であることを確認して <span class="kbd">来場済みにする</span> を押します。</li>
+			</ol>
+			<p class="small">整理券の URL やトークンが分かる場合は、上の「手動照合」に貼り付けて <span class="kbd">照合する</span> でも受付できます。「直近の受付」には、最近受付した人が新しい順に並びます。</p>
+		</div>
+		<div class="fig" style="flex-basis:36mm;">
+			<img src="assets/checkin-manual.png" alt="">
+		</div>
+	</div>
+</section>
+
+<section class="page">
+	<h2>3. 当日予約（予約のない方を登録する）</h2>
+	<p>無断キャンセルなどで空いた枠に、会場で希望された方を入れるときに使います。メニューの <span class="kbd">体験乗馬</span> → <span class="kbd">当日予約</span> で登録します。</p>
+	<div class="box">
+		登録の前に、<b>乗る方の年齢・身長・体重が、乗る馬の条件に合っているか</b>を確認してください（システムは体格を確認しません。条件は受付に掲示している案内か、責任者に確認）。
+	</div>
+	<div class="cols">
+		<div class="text">
+			<ol class="steps">
+				<li><span class="kbd">体験乗馬</span> → <span class="kbd">当日予約</span> を開きます。今日のこれからの時間枠が、時刻順にカードで並んでいます。</li>
+				<li>入れたい<b>時間枠</b>のカードで、<b>乗る馬</b>の行を探します。馬の名前の横に、金額と「残り ○ 名」が出ています（「満員」の行は登録できません）。</li>
+				<li>その行の<b>人数</b>を選びます。家族などで同じ馬にまとめて乗る場合は人数を増やします。</li>
+				<li>必要なら<b>お名前</b>を入れます（空欄でも構いません）。</li>
+				<li>その行の <span class="kbd">登録</span> を押します。</li>
+				<li>画面の上に緑の「<b>✓ 登録しました</b>」と<b>集金額</b>が出たら完了です（そのまま来場済みになります）。金額を集金して、乗る馬の列へ案内します。</li>
+			</ol>
+		</div>
+		<div class="fig" style="flex-basis:52mm;">
+			<img src="assets/admin-walkin.png" alt="">
+			<div class="cap">当日予約の画面（登録した直後）</div>
+		</div>
+	</div>
+	<p class="small" style="margin-top:2mm;">すでに終わった時間枠は表示されません。遅れて来た方を終わった枠に入れるときは、画面の下の「終了した時間枠も表示する」を押します。間違えて登録したときは、画面のいちばん下の「今日の当日予約」で、その行の <span class="kbd">取消</span> を押してから登録し直します。</p>
+</section>
+
+<section class="page">
+	<h2>4. 困ったとき</h2>
+	<table class="faq">
+		<tr><th>カメラが起動しない</th><td>ブラウザーがカメラの使用を許可していない可能性があります。iPhone は「設定 → Safari → カメラ」を「許可」に、Android は Chrome のアドレスバー左のアイコンからカメラを許可して、ページを再読み込みします。それでもだめなら <span class="kbd">写真で読み取る</span> で QR を撮影するか、「氏名で探す」で受付します。</td></tr>
+		<tr><th>なかなか読み取らない</th><td>QR を白い枠の中に、画面の半分くらいの大きさで写します。画面の明るさを上げてもらう、反射しない角度にする、少し離すと読み取りやすくなります。</td></tr>
+		<tr><th>結果が出たまま次に進めない</th><td>結果の表示をタップすると閉じて、次の読み取りに進みます。</td></tr>
+		<tr><th>間違えて受付した</th><td>当日ダッシュボードの検索欄に名前を入れて探し、その人の行の <span class="kbd">予約済みに戻す</span> を押します。</td></tr>
+		<tr><th>当日予約を間違えた</th><td>「当日予約」の画面のいちばん下「今日の当日予約」で、その行の <span class="kbd">取消</span> を押し、登録し直します。</td></tr>
+		<tr><th>通信がつながらない</th><td>「通信に失敗しました」と出たら、電波のよい場所でもう一度試します。システムが使えない間は、当日朝に印刷した<b>名簿</b>（<span class="kbd">体験乗馬</span> → <span class="kbd">名簿印刷</span>）に手書きでチェックし、復旧後に受付画面で来場済みにします。</td></tr>
+		<tr><th>画面が古いまま変わらない</th><td>ページを再読み込みします。ログイン画面に戻った場合は、もう一度ログインします。</td></tr>
+		<tr><th>判断に迷う</th><td>無理に受付せず、責任者に相談してください。</td></tr>
+	</table>
+
+	<div class="box" style="margin-top:6mm;">
+		<b>受付の流れ（まとめ）</b><br>
+		① <span class="kbd">カメラで読み取る</span> → ② QR を白い枠に写す → ③ 緑の「✓ 受付しました」を確認 → ④ 名前・人数・乗る馬を確認して集金 → ⑤ 案内<br>
+		予約のない方は、<span class="kbd">体験乗馬</span> → <span class="kbd">当日予約</span> で登録。
+	</div>
+</section>
+
+</body>
+</html>

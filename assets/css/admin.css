@@ -1,0 +1,485 @@
+/**
+ * 管理画面（ダッシュボード・時間枠・名簿印刷）のスタイル。
+ */
+
+.equiticket-wrap .equiticket {
+	max-width: none;
+	padding: 0;
+}
+
+.equiticket-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 12px 0 16px;
+}
+
+.equiticket-autorefresh,
+.equiticket-lastrun {
+	color: #50575e;
+	font-size: 12px;
+}
+
+.equiticket-summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.equiticket-summary__box {
+	flex: 1 1 120px;
+	padding: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	text-align: center;
+}
+
+.equiticket-summary__label {
+	display: block;
+	color: #646970;
+	font-size: 12px;
+}
+
+.equiticket-summary__value {
+	display: block;
+	font-size: 22px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.equiticket-card {
+	margin-bottom: 20px;
+	padding: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.equiticket-card__header h2 {
+	margin: 0;
+	font-size: 16px;
+}
+
+.equiticket-card__meta {
+	margin: 4px 0;
+	color: #50575e;
+}
+
+.equiticket-card p {
+	margin: 4px 0;
+}
+
+.equiticket-row-actions form {
+	display: inline;
+}
+
+.equiticket-row-actions .button {
+	margin: 0 4px 4px 0;
+}
+
+.equiticket-tag {
+	display: inline-block;
+	padding: 1px 6px;
+	border-radius: 4px;
+	background: #e7f0fb;
+	color: #1d4ed8;
+	font-size: 11px;
+}
+
+.equiticket-muted {
+	color: #646970;
+	font-size: 12px;
+}
+
+.equiticket-panel {
+	margin: 16px 0;
+	padding: 12px 16px;
+	border: 1px solid #dcdcde;
+	border-left: 4px solid #1f6f43;
+	background: #fff;
+}
+
+.equiticket-panel h2 {
+	margin-top: 0;
+}
+
+.equiticket-admin-form .form-table th {
+	width: 220px;
+}
+
+/* 名簿印刷 */
+.equiticket-roster__slot {
+	margin-bottom: 20px;
+}
+
+.equiticket-roster__table {
+	border-collapse: collapse;
+}
+
+.equiticket-roster__table th,
+.equiticket-roster__table td {
+	border: 1px solid #c3c4c7;
+	padding: 6px 8px;
+}
+
+.equiticket-roster__check {
+	width: 3em;
+	text-align: center;
+	font-size: 18px;
+}
+
+@media print {
+	#adminmenumain,
+	#wpadminbar,
+	#wpfooter,
+	.notice,
+	.equiticket-noprint {
+		display: none !important;
+	}
+
+	#wpcontent,
+	#wpbody-content {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	.equiticket-roster__slot {
+		page-break-inside: avoid;
+	}
+
+	.equiticket-roster__table {
+		width: 100%;
+		font-size: 11pt;
+	}
+}
+
+/* データ削除（取り消せない操作）のフォーム */
+.equiticket-danger {
+	margin: 12px 0 24px;
+	padding: 12px 16px;
+	border: 1px solid #d63638;
+	border-left-width: 4px;
+	border-radius: 4px;
+	background: #fcf0f1;
+}
+
+.equiticket-danger .form-table th {
+	width: 200px;
+}
+
+.equiticket-wrap .equiticket-danger__button {
+	border-color: #d63638;
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.equiticket-wrap .equiticket-danger__button:hover {
+	border-color: #b32d2e;
+	background: #fff;
+	color: #8f2122;
+}
+
+/* 設定画面に出す表示見本 */
+.equiticket-wrap .equiticket-theme-preview {
+	max-width: 520px;
+	margin: 0 0 24px;
+}
+
+.equiticket-wrap .equiticket-theme-preview .equiticket-button {
+	pointer-events: none;
+}
+
+/* 当日予約（スマートフォンで使う前提） */
+.equiticket-walkin__done {
+	margin: 12px 0 16px;
+	padding: 14px 16px;
+	border-radius: 6px;
+	background: #1f7a3f;
+	color: #fff;
+	text-align: center;
+}
+
+.equiticket-walkin__done p {
+	margin: 2px 0;
+	color: inherit;
+}
+
+.equiticket-walkin__done-headline {
+	font-size: 22px;
+	font-weight: 700;
+}
+
+.equiticket-walkin__done-main,
+.equiticket-walkin__done-fee {
+	font-size: 17px;
+	font-weight: 700;
+}
+
+.equiticket-walkin__slot {
+	max-width: 640px;
+	margin-bottom: 14px;
+	padding: 10px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.equiticket-walkin .equiticket-walkin__time {
+	margin: 0 0 6px;
+	font-size: 18px;
+}
+
+.equiticket-walkin__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 0;
+	border-top: 1px solid #f0f0f1;
+}
+
+.equiticket-walkin__horse {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 4px 10px;
+	font-size: 16px;
+}
+
+.equiticket-walkin__fee {
+	color: #50575e;
+	font-size: 14px;
+}
+
+.equiticket-walkin__remaining {
+	color: #1f7a3f;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.equiticket-walkin__row.is-full .equiticket-walkin__remaining {
+	color: #b32d2e;
+}
+
+.equiticket-walkin__controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.equiticket-walkin__people select {
+	min-width: 4em;
+	font-size: 16px;
+}
+
+.equiticket-walkin__name {
+	width: 10em;
+	font-size: 16px;
+}
+
+.equiticket-walkin__recent {
+	max-width: 640px;
+	margin: 0;
+}
+
+.equiticket-walkin__recent li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px dotted #dcdcde;
+}
+
+@media (max-width: 600px) {
+	.equiticket-walkin__controls {
+		width: 100%;
+	}
+
+	.equiticket-walkin__name {
+		flex: 1 1 8em;
+	}
+
+	.equiticket-walkin__controls .button-large {
+		min-width: 6em;
+	}
+}
+
+/* 当日ダッシュボード: 人の検索・時間枠の切り替え・無断キャンセルの印 */
+.equiticket-search-box {
+	margin: 8px 0 12px;
+}
+
+.equiticket-search-box input[type="search"] {
+	width: 22em;
+	max-width: 100%;
+}
+
+.equiticket-slot-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 4px 0 14px;
+}
+
+.equiticket-slot-tabs__item {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 5.5em;
+	padding: 6px 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	background: #fff;
+	color: #1d2327;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.equiticket-slot-tabs__item span {
+	color: #646970;
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.equiticket-slot-tabs__item.is-current {
+	border-color: #2271b1;
+	background: #2271b1;
+	color: #fff;
+}
+
+.equiticket-slot-tabs__item.is-current span {
+	color: #dfe9f3;
+}
+
+.equiticket-slot-tabs__item.is-cancelled {
+	text-decoration: line-through;
+}
+
+.equiticket-tag--warning {
+	background: #fcf0f1;
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.equiticket-row--no-show td {
+	background: #fcf0f1 !important;
+}
+
+/* 時間ごと・馬ごとの未来場の表 */
+.equiticket-matrix {
+	width: 100%;
+	max-width: 60em;
+	margin: 0 0 6px;
+	border-collapse: collapse;
+	background: #fff;
+}
+
+.equiticket-matrix th,
+.equiticket-matrix td {
+	padding: 6px 10px;
+	border: 1px solid #dcdcde;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.equiticket-matrix thead th {
+	background: #f6f7f7;
+	font-weight: 700;
+}
+
+.equiticket-matrix tbody th {
+	white-space: nowrap;
+	text-align: left;
+}
+
+.equiticket-matrix tbody th a {
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.equiticket-matrix tr.is-current th,
+.equiticket-matrix tr.is-current td {
+	border-top: 2px solid #2271b1;
+	border-bottom: 2px solid #2271b1;
+}
+
+.equiticket-matrix tr.is-cancelled th,
+.equiticket-matrix tr.is-cancelled td {
+	color: #8c8f94;
+	text-decoration: line-through;
+}
+
+.equiticket-matrix__waiting {
+	display: block;
+	font-size: 17px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.equiticket-matrix__sub,
+.equiticket-matrix__noshow {
+	display: block;
+	color: #646970;
+	font-size: 11px;
+}
+
+.equiticket-matrix__noshow {
+	color: #b32d2e;
+}
+
+.equiticket-matrix__cell.is-waiting {
+	background: #fff8e1;
+}
+
+.equiticket-matrix__cell.is-late {
+	background: #fcf0f1;
+}
+
+.equiticket-matrix__cell.is-late .equiticket-matrix__waiting {
+	color: #b32d2e;
+}
+
+.equiticket-matrix td.is-none {
+	color: #a7aaad;
+	background: #f6f7f7;
+}
+
+.equiticket-matrix__total th,
+.equiticket-matrix__total td {
+	background: #f6f7f7;
+}
+
+/* 設定画面の「はじめにやること」。済／未の印を付けて、次にやることが分かるようにする。 */
+.equiticket-setup-steps li {
+	margin-bottom: 12px;
+	line-height: 1.7;
+}
+
+.equiticket-setup-steps form {
+	margin-top: 6px !important;
+}
+
+.equiticket-badge {
+	display: inline-block;
+	min-width: 1.8em;
+	padding: 0 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	text-align: center;
+	color: #fff;
+}
+
+.equiticket-badge--ok {
+	background: #00a32a;
+}
+
+.equiticket-badge--todo {
+	background: #d63638;
+}

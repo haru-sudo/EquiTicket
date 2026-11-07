@@ -1,0 +1,83 @@
+name: 不具合の報告
+description: 思ったとおりに動かない・エラーが出る・画面が崩れる
+title: "[不具合] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        報告ありがとうございます。
+        **来場者の氏名・メールアドレス・電話番号・整理券の URL（`?et_token=…`）は書かないでください。**
+        Issue は誰でも読めます。スクリーンショットも、個人情報やトークンを隠してから貼ってください。
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: どの画面で起きましたか
+      options:
+        - 来場者の予約画面
+        - 整理券（QR）の表示
+        - 受付（QR の読み取り・来場済みにする）
+        - 管理画面（ダッシュボード・当日予約・名簿）
+        - 管理画面（馬の種類・時間枠）
+        - 管理画面（設定・一斉メール）
+        - 確認メール
+        - インストール・更新・削除
+        - その他・分からない
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 起きたこと
+      description: 何が起きたかを書いてください。エラーメッセージがあればそのまま貼ってください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現の手順
+      description: 同じことを起こすための手順です。分からなければ「分からない」で構いません。
+      placeholder: |
+        1. 予約画面で身長 120cm・体重 25kg を入力する
+        2. 10:00 の枠を選ぶ
+        3. 「予約する」を押す
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 本来どうなってほしいか
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: EquiTicket のバージョン
+      description: 管理画面の「プラグイン」一覧に出ています。
+      placeholder: "例: 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: wp-version
+    attributes:
+      label: WordPress と PHP のバージョン
+      description: 分かる範囲で構いません（「ツール → サイトヘルス → 情報」で確認できます）。
+      placeholder: "例: WordPress 6.6 / PHP 8.1"
+
+  - type: input
+    id: device
+    attributes:
+      label: 使った端末とブラウザ
+      placeholder: "例: iPhone 15 / Safari、Android / Chrome、Windows / Edge"
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: そのほか
+      description: スクリーンショット、使っているキャッシュ・最適化系のプラグイン、レンタルサーバー名など。

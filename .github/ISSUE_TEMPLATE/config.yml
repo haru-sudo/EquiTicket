@@ -1,0 +1,9 @@
+# 自由記述の Issue は使わず、下のテンプレートから選んでもらう。
+blank_issues_enabled: false
+contact_links:
+  - name: セキュリティの問題を非公開で知らせる
+    url: https://github.com/haru-sudo/EquiTicket2/security/advisories/new
+    about: 整理券の不正利用や個人情報の漏れにつながる問題は、公開の Issue ではなくこちらから知らせてください。
+  - name: 使い方の説明（README・かんたん導入ガイド）
+    url: https://github.com/haru-sudo/EquiTicket2#かんたん導入ガイド
+    about: 導入の手順や、よくある質問はこちらにまとまっています。

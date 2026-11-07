@@ -1,0 +1,131 @@
+/*
+ * 画面例のための、WordPress 管理画面の外枠（管理バー・左メニュー・フォーム部品）の再現。
+ * 本物の wp-admin の CSS ではなく、見た目を近づけるための最小限の指定。
+ */
+
+html, body {
+	margin: 0;
+	padding: 0;
+	background: #f0f0f1;
+	color: #3c434a;
+	font-family: "IPAPGothic", "IPAGothic", sans-serif;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+#wpadminbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	height: 32px;
+	padding: 0 12px;
+	background: #1d2327;
+	color: #f0f0f1;
+	font-size: 13px;
+}
+
+#wpadminbar .wp-logo { width: 20px; height: 20px; border-radius: 50%; background: #a7aaad; }
+#wpadminbar .site { font-weight: 600; }
+#wpadminbar .me { margin-left: auto; color: #c3c4c7; }
+
+#adminmenuwrap {
+	position: fixed;
+	top: 32px;
+	bottom: 0;
+	left: 0;
+	width: 160px;
+	background: #1d2327;
+}
+
+#adminmenu { margin: 12px 0 0; padding: 0; list-style: none; }
+#adminmenu > li > a { display: block; padding: 8px 12px; color: #f0f0f1; text-decoration: none; }
+#adminmenu > li.current > a { background: #2271b1; color: #fff; }
+#adminmenu > li.open { background: #2c3338; }
+#adminmenu > li.open > a { background: #2271b1; color: #fff; }
+#adminmenu ul { margin: 0; padding: 6px 0; list-style: none; background: #2c3338; }
+#adminmenu ul a { display: block; padding: 5px 12px 5px 16px; color: #c3c4c7; text-decoration: none; }
+#adminmenu ul a.current { color: #fff; font-weight: 600; }
+
+#wpcontent { margin-left: 160px; padding: 32px 20px 40px; }
+body.mobile #wpcontent { margin-left: 0; padding: 46px 10px 30px; }
+body.mobile #wpadminbar { height: 46px; }
+
+.wrap { margin: 10px 20px 0 2px; }
+.wrap h1 { margin: 0; padding: 9px 0 4px; color: #1d2327; font-size: 23px; font-weight: 400; line-height: 1.3; }
+.wrap h2 { margin: 1.4em 0 0.6em; color: #1d2327; font-size: 1.3em; }
+.wrap h3 { margin: 1.2em 0 0.5em; color: #1d2327; font-size: 1.1em; }
+.wrap p, .wrap li { font-size: 13px; }
+.description { color: #646970; font-style: normal; }
+p.description { margin: 4px 0 0; }
+
+.subsubsub { float: left; margin: 8px 0 0; padding: 0; list-style: none; color: #646970; font-size: 13px; }
+.subsubsub li { display: inline; margin: 0; padding: 0; }
+.subsubsub a { color: #2271b1; text-decoration: none; }
+.subsubsub a.current { color: #1d2327; font-weight: 600; }
+.clear { clear: both; }
+
+.form-table { width: 100%; margin-top: 0.5em; border-collapse: collapse; clear: both; }
+.form-table th { width: 200px; padding: 20px 10px 20px 0; color: #1d2327; font-weight: 600; text-align: left; vertical-align: top; line-height: 1.3; }
+.form-table td { padding: 15px 10px; vertical-align: middle; line-height: 1.3; }
+
+input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="time"], input[type="search"], select, textarea {
+	min-height: 30px;
+	padding: 0 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	color: #2c3338;
+	font-family: inherit;
+	font-size: 14px;
+	line-height: 2;
+	box-shadow: 0 0 0 transparent;
+}
+
+textarea { padding: 2px 6px; line-height: 1.5; }
+select { padding-right: 24px; }
+.regular-text { width: 25em; }
+.large-text { width: 99%; }
+input[type="number"] { width: 6em; }
+input[type="checkbox"], input[type="radio"] { width: 16px; height: 16px; margin: -4px 4px 0 0; vertical-align: middle; }
+
+.button, .button-secondary {
+	display: inline-block;
+	min-height: 30px;
+	margin: 0;
+	padding: 0 10px;
+	border: 1px solid #2271b1;
+	border-radius: 3px;
+	background: #f6f7f7;
+	color: #2271b1;
+	font-family: inherit;
+	font-size: 13px;
+	line-height: 2.15384615;
+	text-decoration: none;
+	cursor: pointer;
+	vertical-align: top;
+}
+
+.button-primary { background: #2271b1; border-color: #2271b1; color: #fff; }
+.button-small { min-height: 26px; padding: 0 8px; font-size: 11px; line-height: 2.18181818; }
+.button-link { padding: 0; border: 0; background: none; color: #2271b1; font-family: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+.button-link.delete { color: #b32d2e; }
+p.submit { margin-top: 20px; padding: 10px 0 0; }
+
+.widefat { width: 100%; border: 1px solid #c3c4c7; border-spacing: 0; background: #fff; box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+.widefat thead th { padding: 8px 10px; border-bottom: 1px solid #c3c4c7; color: #2c3338; font-weight: 400; text-align: left; }
+.widefat td { padding: 8px 10px; color: #50575e; vertical-align: top; font-size: 13px; }
+.widefat.striped > tbody > :nth-child(odd) { background: #f6f7f7; }
+
+.notice { margin: 5px 0 15px; padding: 1px 12px; border: 1px solid #c3c4c7; border-left: 4px solid #72aee6; background: #fff; }
+.notice-success { border-left-color: #00a32a; }
+.notice-warning { border-left-color: #dba617; }
+.notice-error { border-left-color: #d63638; }
+.notice p { margin: 0.5em 0; padding: 2px; }
+
+.wp-picker-container input { width: 7em; }
+hr { margin: 24px 0; border: 0; border-top: 1px solid #dcdcde; }

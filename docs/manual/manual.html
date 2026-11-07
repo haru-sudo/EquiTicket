@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>EquiTicket 運用マニュアル</title>
+<style>
+	/*
+	 * 印刷（A4）向けの運用マニュアル。bin/build-manual.sh から Chromium で PDF にする。
+	 * 画面例は tools/manual/ でプラグインの描画処理を実際に動かして撮影したもの。
+	 */
+	@page { size: A4; margin: 17mm 14mm 16mm; }
+
+	:root {
+		--ink: #1f2933;
+		--muted: #5b6770;
+		--accent: #1f3a68;
+		--accent-soft: #e6eaf1;
+		--line: #c9ced3;
+		--warn: #8a1538;
+		--warn-soft: #fbeef1;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		font-family: "IPAPGothic", "IPAGothic", sans-serif;
+		font-size: 9.6pt;
+		line-height: 1.72;
+		color: var(--ink);
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	h1, h2, h3, h4 { line-height: 1.4; page-break-after: avoid; }
+
+	/* 表紙 */
+	.cover { display: flex; flex-direction: column; min-height: 258mm; page-break-after: always; }
+	.cover__top { padding-top: 58mm; }
+	.cover__label { color: var(--accent); font-size: 11pt; font-weight: bold; letter-spacing: 0.18em; }
+	.cover__title { margin: 5mm 0 3mm; font-size: 28pt; font-weight: bold; letter-spacing: 0.03em; line-height: 1.3; }
+	.cover__rule { width: 36mm; height: 2.5mm; margin: 6mm 0 8mm; background: var(--accent); }
+	.cover__sub { margin: 0; color: var(--muted); font-size: 11pt; }
+	.cover__meta { margin-top: auto; padding-top: 5mm; border-top: 1px solid var(--line); color: var(--muted); font-size: 9pt; }
+	.cover__meta dl { display: grid; grid-template-columns: 30mm 1fr; gap: 1.5mm 4mm; margin: 0; }
+	.cover__meta dt { font-weight: bold; }
+	.cover__meta dd { margin: 0; }
+
+	/* 部・章 */
+	.part { page-break-before: always; padding-top: 70mm; }
+	.part__num { color: var(--accent); font-size: 11pt; font-weight: bold; letter-spacing: 0.2em; }
+	.part__title { margin: 3mm 0 4mm; font-size: 22pt; }
+	.part__desc { max-width: 140mm; color: var(--muted); font-size: 10pt; }
+	.part__list { margin: 8mm 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+	.part__list li { padding: 2mm 0; border-bottom: 1px solid var(--line); }
+
+	.chapter { page-break-before: always; }
+
+	h2.chapter__title {
+		display: flex;
+		align-items: baseline;
+		gap: 3mm;
+		margin: 0 0 4mm;
+		padding-bottom: 2mm;
+		border-bottom: 2px solid var(--accent);
+		font-size: 15pt;
+	}
+
+	h2.chapter__title .num { color: var(--accent); font-size: 12pt; }
+
+	h3 { margin: 6mm 0 2mm; padding-left: 2.5mm; border-left: 4px solid var(--accent); font-size: 11.5pt; }
+	h3 .h-path { margin-left: 3mm; font-size: 8.8pt; font-weight: normal; }
+	h4 { margin: 4mm 0 1mm; font-size: 10.2pt; }
+
+	p { margin: 0 0 2.5mm; }
+	.lead { color: var(--muted); font-size: 10pt; }
+
+	ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; }
+	li { margin-bottom: 1mm; }
+
+	ol.steps { padding: 0; list-style: none; counter-reset: step; }
+	ol.steps > li { position: relative; margin: 0 0 2mm; padding-left: 8mm; counter-increment: step; page-break-inside: avoid; }
+	ol.steps > li::before {
+		content: counter(step);
+		position: absolute;
+		top: 0.4mm;
+		left: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 5.6mm;
+		height: 5.6mm;
+		border-radius: 50%;
+		background: var(--accent);
+		color: #fff;
+		font-size: 8.5pt;
+		font-weight: bold;
+	}
+
+	table { width: 100%; margin: 0 0 3.5mm; border-collapse: collapse; }
+	tr { page-break-inside: avoid; }
+	table.keep { page-break-inside: avoid; }
+	th, td { padding: 1.6mm 2.4mm; border: 1px solid var(--line); text-align: left; vertical-align: top; font-size: 9pt; }
+	thead th { background: var(--accent); color: #fff; font-weight: bold; }
+	tbody th { background: var(--accent-soft); white-space: nowrap; }
+	td.c, th.c { text-align: center; }
+	.ok { color: #1f7a3f; font-weight: bold; }
+	.ng { color: #9aa1a7; }
+
+	.note, .warn, .tip {
+		margin: 0 0 3.5mm;
+		padding: 2.5mm 3.5mm;
+		border-left: 4px solid var(--accent);
+		background: #f2f4f8;
+		font-size: 9pt;
+		page-break-inside: avoid;
+	}
+	.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+	.tip { border-left-color: #1f7a3f; background: #eef7f1; }
+	.note b.t, .warn b.t, .tip b.t { display: block; margin-bottom: 0.8mm; }
+
+	figure { margin: 0 0 4mm; page-break-inside: avoid; }
+	figure img { display: block; max-width: 100%; border: 1px solid var(--line); background: #fff; }
+	figure.wide img { width: 100%; }
+	figure.phone img { width: 64mm; }
+	figure.small img { width: 52mm; }
+	figure.menu img { width: 42mm; }
+	figcaption { margin-top: 1.2mm; color: var(--muted); font-size: 8.5pt; }
+
+	.row { display: flex; gap: 5mm; align-items: flex-start; margin: 0 0 4mm; page-break-inside: avoid; }
+	.row > * { flex: 1 1 0; min-width: 0; }
+	.row > figure { margin: 0; }
+	.row > figure.phone, .row > figure.small { flex: 0 0 auto; }
+
+	.kbd { padding: 0.2mm 1.6mm; border: 1px solid var(--line); border-radius: 1.5px; background: #f1f3f5; font-size: 8.8pt; white-space: nowrap; }
+	code { padding: 0.2mm 1.2mm; background: #f1f3f5; font-family: "IPAGothic", monospace; font-size: 8.8pt; }
+	pre { margin: 0 0 3mm; padding: 2.5mm 3.5mm; background: #f1f3f5; font-family: "IPAGothic", monospace; font-size: 8.8pt; white-space: pre-wrap; page-break-inside: avoid; }
+
+	/* もくじ（本文の見出しから自動で作る。ページ番号は bin/build-manual.sh が入れる） */
+	.toc { margin: 0; padding: 0; list-style: none; }
+	.toc li { margin: 0; padding: 1.1mm 0; border-bottom: 1px dotted var(--line); page-break-inside: avoid; }
+	.toc a { color: inherit; text-decoration: none; }
+	.toc .toc-row { display: flex; gap: 3mm; font-size: 9.6pt; }
+	.toc .toc-row b { flex: 0 0 7mm; color: var(--accent); }
+	.toc .toc-row .page { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+	.toc .toc-sub { margin: 0.2mm 0 0 10mm; color: var(--muted); font-size: 7.8pt; line-height: 1.5; }
+	.toc li.toc-part { margin-top: 2.5mm; border-bottom: 1px solid var(--accent); }
+	.toc li.toc-part .toc-row { color: var(--accent); font-weight: bold; }
+
+	.diagram { display: flex; align-items: stretch; gap: 3mm; margin: 0 0 4mm; page-break-inside: avoid; }
+	.diagram .box { flex: 1; padding: 3mm; border: 1.5px solid var(--accent); border-radius: 2mm; background: #fff; font-size: 8.8pt; }
+	.diagram .box b { display: block; margin-bottom: 1mm; color: var(--accent); font-size: 9.6pt; }
+	.diagram .arrow { display: flex; align-items: center; color: var(--accent); font-size: 14pt; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="cover">
+	<div class="cover__top">
+		<div class="cover__label">体験乗馬 整理券システム</div>
+		<div class="cover__title">EquiTicket<br />運用マニュアル</div>
+		<div class="cover__rule"></div>
+		<p class="cover__sub">導入・初期設定から、管理画面の全画面・全項目、当日の運用、トラブル対応まで。</p>
+	</div>
+	<div class="cover__meta">
+		<dl>
+			<dt>対象</dt><dd>サイト管理者、運営スタッフ、受付スタッフ</dd>
+			<dt>対象バージョン</dt><dd>EquiTicket 1.0.0</dd>
+			<dt>画面例について</dt><dd>本書の画面例は、プラグインの描画処理をサンプルデータで実際に動かして撮影したものです。項目名・並び・文言は実物と同じですが、WordPress の版・配色設定・テーマによって、周囲のメニューや書体の見た目は異なります。</dd>
+		</dl>
+	</div>
+</div>
+<div class="chapter" style="page-break-before:auto;">
+	<h2 class="chapter__title">もくじ</h2>
+	<ol class="toc" id="toc"></ol>
+</div>
+
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 1 部</div>
+	<h1 class="part__title">はじめに</h1>
+	<p class="part__desc">システムの全体像、役割と権限、本書で使う用語をまとめます。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">1</span>システムの概要</h2>
+
+	<h3>1-1. できること</h3>
+	<p>来場者がスマートフォンから体験乗馬の整理券（QR コード）を予約し、当日は受付でその QR を読み取って来場を記録するシステムです。WordPress のプラグインとして動作し、予約・受付・集計・名簿まで WordPress の中で完結します。</p>
+
+	<div class="diagram">
+		<div class="box"><b>来場者（スマホ）</b>予約ページで体格を入力 → 乗れる馬が分かる → 時間枠と馬を選ぶ → 名前・メール・同意 → 整理券（QR）を受け取る</div>
+		<div class="arrow">→</div>
+		<div class="box"><b>WordPress（EquiTicket）</b>定員を確認して予約を確定（同時申込みでも超過しない）<br />確認メールを送信（整理券の URL つき）<br />締切を過ぎた未来場を自動で空きに戻す</div>
+		<div class="arrow">←</div>
+		<div class="box"><b>受付スタッフ（スマホ）</b>受付画面で QR を読み取る → 名前・乗る馬・集金額を確認 → 来場を記録</div>
+	</div>
+
+	<table>
+		<thead><tr><th style="width:34mm;">機能</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>馬の種類</th><td>ポニー・馬など、体験で出す馬の種類を自由に登録。種類ごとに乗れる条件（年齢・身長・体重）と当日の支払額を持つ</td></tr>
+			<tr><th>予約</th><td>4 ステップ（体格の入力 → 時間枠と馬の選択 → 申込み・同意 → 整理券）。体格が条件に合う馬だけを案内し、2 種類以上に乗れる方には選んでもらう</td></tr>
+			<tr><th>定員管理</th><td>時間枠ごとに、出す馬の種類ごとの頭数・定員を設定。残り人数は予約のたびに計算し直す</td></tr>
+			<tr><th>整理券</th><td>推測できない 40 文字のトークンを含む URL を QR にしたもの。整理券ページに QR を表示し、確認メールでは整理券の URL を渡す</td></tr>
+			<tr><th>受付</th><td>スマホのカメラで QR を読み取り、その場で来場を記録。写真からの読み取り、URL 入力、氏名検索でも受付できる</td></tr>
+			<tr><th>当日の調整</th><td>頭数・定員の変更、枠の中止（予約者へのお知らせメール）、未来場の解放、予約なしの方の登録（当日予約）</td></tr>
+			<tr><th>連絡</th><td>予約済みの方への一斉メール（前日の「来られなくなったら取り消してください」のお願いなど）</td></tr>
+			<tr><th>集計・名簿</th><td>予約数・来場数・集金予定額の集計、時間ごと・馬ごとの未来場の表、時間帯別の名簿印刷、CSV 書き出し、過去の記録の閲覧</td></tr>
+			<tr><th>データの管理</th><td>予約の 1 件ずつの削除、日付を指定した予約データ・時間枠の削除（リセット）、プラグイン削除時のデータ削除</td></tr>
+		</tbody>
+	</table>
+
+	<h3>1-2. 役割と権限</h3>
+	<p>EquiTicket の画面は、ユーザーの権限によって使える範囲が変わります。サイト管理者のほかに、EquiTicket 専用のロールが 2 つあります。</p>
+	<table>
+		<thead><tr><th>画面・操作</th><th class="c">サイト管理者</th><th class="c">運営スタッフ</th><th class="c">受付スタッフ</th><th class="c">編集者</th></tr></thead>
+		<tbody>
+			<tr><th>当日ダッシュボード・過去の記録（予約の操作を含む）</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td></tr>
+			<tr><th>受付（QR チェックイン）</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td></tr>
+			<tr><th>当日予約（予約のない方の登録）</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td></tr>
+			<tr><th>名簿印刷・CSV 書き出し</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td><td class="c ok">○</td></tr>
+			<tr><th>予約の削除（ダッシュボードの <span class="kbd">削除</span>）</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td></tr>
+			<tr><th>馬の種類・時間枠の追加・編集・削除</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td></tr>
+			<tr><th>一斉メール</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td></tr>
+			<tr><th>設定（運用ツールのデータ削除を含む）</th><td class="c ok">○</td><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td></tr>
+			<tr><th>スタッフ用アカウントの作成</th><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td><td class="c ng">×</td></tr>
+			<tr><th>WordPress 本体の画面（投稿・プラグインなど）</th><td class="c ok">○</td><td class="c ng">×</td><td class="c ng">×</td><td class="c ok">一部</td></tr>
+		</tbody>
+	</table>
+	<div class="warn"><b class="t">運営スタッフはデータを削除できます</b>運営スタッフは、予約の削除、一斉メール、「設定」の運用ツール（データの削除）も使えます。スタッフ同士で共有するアカウントは、原則として<b>受付スタッフ</b>にしてください。運営スタッフのアカウントは責任者だけで使う想定です。</div>
+
+	<h3>1-3. 用語</h3>
+	<table>
+		<tbody>
+			<tr><th>馬の種類</th><td>「ポニー」「馬」のような、体験で出す馬の区分。名前・説明・乗れる条件（年齢・身長・体重）・当日の支払額を持つ（9 章）。最初はポニーと馬の 2 種類が入っている</td></tr>
+			<tr><th>時間枠</th><td>「10:00〜10:20」のような受付の単位。日付・開始／終了時刻・出す馬の種類ごとの頭数と定員・状態・備考を持つ</td></tr>
+			<tr><th>頭数</th><td>その枠に出す馬の数（馬の種類ごと）。案内用の表示で、残り人数の計算には使わない</td></tr>
+			<tr><th>定員</th><td>その枠で受け入れる人数。馬の種類ごとに設定し、合計定員は自動で決まる</td></tr>
+			<tr><th>予約（整理券）</th><td>1 件の申込み。Web からの予約は常に 1 件＝1 名。スタッフが登録する当日予約は複数名をまとめられる</td></tr>
+			<tr><th>トークン</th><td>整理券 URL の末尾の <code>et_token=</code> 以降の 40 文字。QR の中身であり、予約を特定する鍵</td></tr>
+			<tr><th>当日予約（当日枠）</th><td>予約なしで来場した方を、スタッフが「当日予約」画面でその場で登録した予約。ダッシュボード・名簿・CSV では「当日枠」と表示される</td></tr>
+			<tr><th>未来場</th><td>「予約済み」のまま、まだ受付をしていない予約（人数）</td></tr>
+			<tr><th>無断キャンセル</th><td>枠の開始から一定時間（既定 10 分）を過ぎても受付がない予約。自動で空きに戻る</td></tr>
+			<tr><th>ショートコード</th><td>固定ページに書くと EquiTicket の画面が表示される記述。予約ページ用の <code>[equiticket_reservation]</code>。以前の版の受付用 <code>[equiticket_checkin]</code> は、現在は管理画面の受付への案内だけを表示する</td></tr>
+		</tbody>
+	</table>
+</div>
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 2 部</div>
+	<h1 class="part__title">導入と初期設定</h1>
+	<p class="part__desc">サイト管理者が最初に行う作業です。インストール、予約ページの作成、サーバー側の確認、スタッフ用アカウントの作成までを扱います。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">2</span>インストールと更新</h2>
+
+	<h3>2-1. 動作環境</h3>
+	<table>
+		<tbody>
+			<tr><th>WordPress</th><td>5.8 以上</td></tr>
+			<tr><th>PHP</th><td>7.2 以上（zlib 拡張が必要。通常は標準で有効）</td></tr>
+			<tr><th>データベース</th><td>MySQL / MariaDB（テーブルは InnoDB で作成。予約確定時の排他制御に使う）</td></tr>
+			<tr><th>通信</th><td>https（SSL）必須。http ではスマホのカメラが使えない</td></tr>
+			<tr><th>受付端末</th><td>iPhone / iPad（Safari）、Android（Chrome）、PC（Chrome / Edge / Safari）。カメラ付きの端末ならどれでも可</td></tr>
+		</tbody>
+	</table>
+
+	<h3>2-2. インストールと有効化</h3>
+	<ol class="steps">
+		<li>配布された <code>equiticket.zip</code> を用意します（リポジトリからは <code>bash bin/build-zip.sh</code> で作成）。</li>
+		<li>WordPress の管理画面で <span class="kbd">プラグイン</span> → <span class="kbd">新規プラグインを追加</span> → <span class="kbd">プラグインのアップロード</span> を開きます。</li>
+		<li>ZIP を選んで <span class="kbd">今すぐインストール</span>、続けて <span class="kbd">プラグインを有効化</span> を押します。</li>
+		<li>左メニューに <span class="kbd">体験乗馬</span> が追加されれば完了です。</li>
+	</ol>
+
+	<h3>2-3. 有効化で作られるもの</h3>
+	<table>
+		<tbody>
+			<tr><th>テーブル</th><td><code>wp_equiticket_time_slots</code>（時間枠）、<code>wp_equiticket_horses</code>（馬の種類）、<code>wp_equiticket_slot_horses</code>（時間枠ごとに出す馬）、<code>wp_equiticket_reservations</code>（予約）。接頭辞はサイトの設定による</td></tr>
+			<tr><th>馬の種類</th><td>「ポニー」と「馬」の 2 種類（条件と支払額は 9 章）。新しくインストールしたときだけ入り、あとから自由に変更・追加できる</td></tr>
+			<tr><th>ロール</th><td>「体験乗馬 受付スタッフ」「体験乗馬 運営スタッフ」。管理者には全権限、編集者には受付の権限が付く</td></tr>
+			<tr><th>定期処理</th><td>無断キャンセルを空きに戻す処理（WP-Cron、5 分ごと）</td></tr>
+			<tr><th>設定</th><td>すべての設定項目が既定値で入る（付録 B を参照）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>2-4. 更新・無効化・削除</h3>
+	<table>
+		<tbody>
+			<tr><th>更新</th><td>新しい ZIP を同じ手順でアップロードし、確認画面で <span class="kbd">現在のものをアップロードしたもので置き換える</span> を選びます。予約・時間枠・設定はそのまま残り、必要なテーブルの変更は自動で行われます。</td></tr>
+			<tr><th>無効化</th><td>定期処理が止まるだけで、データは残ります。</td></tr>
+			<tr><th>削除</th><td>既定ではデータを残します。テーブルと設定も消したい場合は、削除の前に <span class="kbd">設定</span> → <span class="kbd">個人情報の取り扱い</span> の「プラグイン削除時」にチェックを入れて保存してください。</td></tr>
+		</tbody>
+	</table>
+	<div class="warn"><b class="t">更新の前に</b>当日の受付中は更新しないでください。更新前に「名簿印刷」から CSV を書き出しておくと安心です。</div>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">3</span>予約ページ</h2>
+
+	<h3>3-1. 予約ページを作る（必須）</h3>
+	<p>来場者が開くページです。ポスターの QR やサイトのお知らせからリンクします。</p>
+	<p><b>かんたんな方法:</b> <span class="kbd">体験乗馬</span> → <span class="kbd">設定</span> の「はじめにやること」にある <span class="kbd">予約ページを自動で作成する</span> を押すと、下の 1〜4 がまとめて終わります（タイトルは「体験乗馬のご予約」。あとから変えられます）。固定ページを公開する権限が必要なので、サイト管理者のアカウントで押してください。自分で作る場合は次の手順です。</p>
+	<ol class="steps">
+		<li><span class="kbd">固定ページ</span> → <span class="kbd">新規固定ページを追加</span> を開き、タイトル（例: 体験乗馬 予約）を入力します。</li>
+		<li>本文の <span class="kbd">＋</span> から <b>ショートコード</b> ブロックを追加し、<code>[equiticket_reservation]</code> と入力します。</li>
+		<li>必要ならブロックの前後に案内文や写真を入れ、<span class="kbd">公開</span> します。</li>
+		<li><span class="kbd">体験乗馬</span> → <span class="kbd">設定</span> → <span class="kbd">基本設定</span> の「予約ページ」で、このページを選んで保存します。</li>
+	</ol>
+	<div class="note"><b class="t">「予約ページ」を設定する理由</b>確認メールと整理券の QR には、このページの URL に <code>?et_token=…</code> を付けたものが入ります。未設定のままでも QR は機能しますが（サイトのトップに簡易表示）、テーマの見た目が付かないため、必ず設定してください。予約ページが設定・公開されていない間は、運営スタッフとサイト管理者が EquiTicket の画面を開くと、上部に「来場者が予約するためのページがまだありません。」というお知らせと <span class="kbd">予約ページを自動で作成する</span> ボタンが出ます。</div>
+	<p>設定画面の「はじめにやること」には、予約ページの用意のほか、馬の種類の確認、時間枠の登録、文面の確認、テストメール、スタッフ用アカウントの作成が順に並びます。自動で判定できる最初の 3 つには「済」「未」の印が付きます（13 章）。</p>
+
+	<h3>3-2. ポスター用の QR</h3>
+	<p>予約ページの URL を QR にしてポスターに載せます。サイトの URL は固定ページの「リンク」欄、またはページを開いたときのアドレスバーで確認できます。整理券の QR とは別物なので混同しないでください（整理券の QR は予約ごとに異なる）。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">4</span>サーバー側で確認すること</h2>
+
+	<h3>4-1. https（SSL）</h3>
+	<p>スマートフォンのブラウザーは、https のページでしかカメラを使わせません。サイトが http で表示される場合は、サーバーの管理画面で SSL（無料独自 SSL など）を有効にし、WordPress の <span class="kbd">設定</span> → <span class="kbd">一般</span> の「WordPress アドレス」「サイトアドレス」を https にしてください。受付画面を http で開くと「http で開かれているため、カメラを使えません」と表示されます（「写真で読み取る」は http でも使えます）。</p>
+
+	<h3>4-2. ページキャッシュの除外</h3>
+	<p>予約ページがキャッシュされると、古いフォームや古い残り人数が配信され、「送信内容を確認できませんでした」と表示されたり、満席の枠が選べるように見えたりします。次のページ・URL をキャッシュの対象外にしてください。</p>
+	<ul>
+		<li>予約ページ（ショートコード <code>[equiticket_reservation]</code> を置いたページ）</li>
+		<li><code>/wp-admin/admin-ajax.php</code>（残り人数の自動更新・受付の照合に使う。通常は最初から対象外）</li>
+	</ul>
+	<p>EquiTicket は予約ページと整理券の表示時に、キャッシュ禁止のヘッダーと、キャッシュ系プラグインが参照する <code>DONOTCACHEPAGE</code> を出します（整理券には検索エンジン除外の指定も付けます）。ただしサーバー側のキャッシュはこれを無視することがあるため、サーバーのキャッシュ機能（エックスサーバーの「サーバーキャッシュ設定」など、20-3）とキャッシュ系プラグインの両方で除外を確認してください。JavaScript を結合・遅延読み込みする最適化機能は、受付画面の QR 読み取りライブラリを壊すことがあるため、EquiTicket のファイル（<code>/wp-content/plugins/equiticket/</code>）を除外してください。</p>
+
+	<h3>4-3. メールの送信</h3>
+	<p>確認メールは WordPress 標準の送信機能（<code>wp_mail()</code>）で送ります。サーバーの設定によっては迷惑メールに振り分けられやすいため、次を行ってください。</p>
+	<ol class="steps">
+		<li><span class="kbd">設定</span> → <span class="kbd">メール送信</span> の「送信元メールアドレス」を、サイトと同じドメインのアドレスにする。</li>
+		<li>届きにくい場合は、SMTP 送信プラグインで、サーバーのメールアカウントから送るように設定する。</li>
+		<li><span class="kbd">設定</span> → <span class="kbd">運用ツール</span> → <span class="kbd">テストメールの送信</span> で、Gmail・キャリアメールなど複数の宛先に届くか確認する。</li>
+	</ol>
+
+	<h3>4-4. 定期処理（WP-Cron）</h3>
+	<p>無断キャンセルの自動解放は WP-Cron で 5 分ごとに動きます。WP-Cron はサイトにアクセスがあったときに動く仕組みのため、アクセスが少ないと遅れることがあります。EquiTicket は予約ページ・当日ダッシュボードが表示されたときにも（1 分に 1 回まで）同じ処理を行うので、当日は実用上問題ありません。ダッシュボードの「最後の自動解放」で最終実行時刻を確認でき、<span class="kbd">未来場を解放（無断キャンセル処理）</span> で手動実行もできます。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">5</span>スタッフ用アカウント</h2>
+
+	<h3>5-1. アカウントの種類</h3>
+	<div class="row">
+		<figure class="small menu"><img src="assets/menu-admin.png" alt="" /><figcaption>サイト管理者のメニュー</figcaption></figure>
+		<figure class="small menu"><img src="assets/menu-manager.png" alt="" /><figcaption>運営スタッフのメニュー</figcaption></figure>
+		<figure class="small menu"><img src="assets/menu-staff.png" alt="" /><figcaption>受付スタッフのメニュー</figcaption></figure>
+	</div>
+	<table>
+		<thead><tr><th>ロール</th><th>用途</th><th>使える画面</th></tr></thead>
+		<tbody>
+			<tr><th>体験乗馬 受付スタッフ</th><td>スタッフ同士で共有する受付用</td><td>当日ダッシュボード、過去の記録、受付、当日予約、名簿印刷、プロフィール</td></tr>
+			<tr><th>体験乗馬 運営スタッフ</th><td>責任者が馬の種類・時間枠・設定を触る用</td><td>上に加えて 馬の種類、時間枠、一斉メール、設定</td></tr>
+		</tbody>
+	</table>
+	<p>この 2 つのロールしか持たないユーザーには、次の制限がかかります。</p>
+	<ul>
+		<li>ログインすると、WordPress のダッシュボードではなく <span class="kbd">当日ダッシュボード</span> が開く</li>
+		<li>左メニューには <span class="kbd">体験乗馬</span> と <span class="kbd">プロフィール</span> だけが表示される</li>
+		<li>EquiTicket 以外の管理画面の URL を直接開いても、当日ダッシュボードに戻される</li>
+		<li>サイトを表示したとき、画面上部の管理バーが表示されない（受付画面を広く使うため）</li>
+	</ul>
+
+	<h3>5-2. 作成する</h3>
+	<figure class="wide"><img src="assets/admin-settings-09.png" alt="" /><figcaption>設定 → スタッフ用アカウント。作成済みのアカウントの一覧と、作成フォーム。</figcaption></figure>
+	<ol class="steps">
+		<li><span class="kbd">体験乗馬</span> → <span class="kbd">設定</span> を開き、<span class="kbd">スタッフ用アカウント</span> まで下がります（サイト管理者のみ作成フォームが表示されます）。</li>
+		<li>ユーザー名・メールアドレス・パスワード・種類を入れて <span class="kbd">アカウントを作成する</span> を押します。</li>
+	</ol>
+	<table>
+		<tbody>
+			<tr><th>ユーザー名</th><td>ログインに使う名前。半角英数字と <code>- _ . @</code>。あとから変更できない</td></tr>
+			<tr><th>メールアドレス</th><td>パスワード再設定の送り先。団体の代表アドレスなど、共有できるもの。ほかのユーザーと重複不可</td></tr>
+			<tr><th>パスワード</th><td>8 文字以上。候補が自動で入る。作成後は表示されないので控えておく</td></tr>
+			<tr><th>種類</th><td>受付スタッフ（既定）／運営スタッフ</td></tr>
+		</tbody>
+	</table>
+	<p>WordPress 標準の <span class="kbd">ユーザー</span> → <span class="kbd">新規ユーザーを追加</span> で、権限グループに「体験乗馬 受付スタッフ」などを選んでも同じです。既存のユーザーに付け替えることもできます。</p>
+
+	<h3>5-3. パスワードの変更と再設定</h3>
+	<ul>
+		<li>変更: そのアカウントでログインし、<span class="kbd">プロフィール</span> の「新しいパスワード」から変更する。管理者は設定画面の一覧の <span class="kbd">パスワードの変更など</span> から変更できる。</li>
+		<li>忘れた場合: ログイン画面の「パスワードをお忘れですか ?」から、登録したメールアドレスに再設定のリンクを送る。</li>
+		<li>共有アカウントのパスワードは、イベントが終わったら変更することを勧めます。</li>
+	</ul>
+</div>
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 3 部</div>
+	<h1 class="part__title">管理画面リファレンス</h1>
+	<p class="part__desc">左メニュー「体験乗馬」の画面について、表示される項目と操作をすべて説明します。上の 5 つは受付スタッフも使え、下の 4 つは運営スタッフとサイト管理者だけが使えます。</p>
+	<ul class="part__list">
+		<li>当日ダッシュボード・過去の記録 — その日の状況の確認と、予約の個別操作</li>
+		<li>受付 — QR の読み取りと来場の記録</li>
+		<li>当日予約 — 予約のない方を、今日の空いている枠にその場で登録</li>
+		<li>名簿印刷 — 時間帯別の名簿の印刷と CSV 書き出し</li>
+		<li>馬の種類 — 乗れる条件と当日の支払額の登録</li>
+		<li>時間枠 — 枠の追加・編集・中止・削除・一括作成</li>
+		<li>一斉メール — 予約済みの方へのまとめての連絡</li>
+		<li>設定 — 参加条件・案内文・同意事項・デザイン・メール・アカウント・運用ツール</li>
+	</ul>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">6</span>当日ダッシュボード・過去の記録</h2>
+	<p class="lead">今日以降の時間枠と予約を確認し、予約ごとの操作を行う画面です。スタッフ用アカウントでログインすると最初に開きます。昨日までの日は、同じ作りの「過去の記録」で見ます（6-5）。</p>
+
+	<h3>6-1. 上部（検索・日付・操作・集計）</h3>
+	<figure class="wide"><img src="assets/admin-dashboard-top.png" alt="" /><figcaption>画面の上部。検索欄、日付、操作ボタン、集計、時間ごと・馬ごとの未来場の表、時間枠の切り替えボタンが並ぶ。</figcaption></figure>
+
+	<h4>人を探す</h4>
+	<p>見出しの下の「名前・メールアドレス・受付番号で探す」に入力して <span class="kbd">検索</span> を押すと、<b>すべての日</b>の予約から探して一覧にします（最大 100 件）。名前・メールアドレスは一部だけでも探せます。受付番号は「No.0012」「12」のどちらの書き方でも探せます。結果の表には「日時」の列が加わり、予約ごとの操作（6-4）もそのまま使えます。<span class="kbd">検索をやめる</span> で元の表示に戻ります。</p>
+
+	<h4>日付の切り替え</h4>
+	<p>検索欄の下に、今日以降で時間枠が登録されている日付が並びます。開いた時点では今日の日付が選ばれています（今日に枠がなければ「この日の時間枠は登録されていません」と表示）。</p>
+
+	<h4>操作ボタン</h4>
+	<table>
+		<tbody>
+			<tr><th>未来場を解放（無断キャンセル処理）</th><td><b>今日の</b>時間枠のうち、開始から「無断キャンセルの締切」（既定 10 分）を過ぎた枠の「予約済み」を「無断キャンセル」に変え、その人数を残りに戻します。自動処理と同じ内容をすぐに実行するボタンです。表示中の日付にかかわらず今日が対象で、「中止」の枠は対象外です（23-1）。</td></tr>
+			<tr><th>受付画面を開く</th><td>「受付」画面に移動します。</td></tr>
+			<tr><th>名簿を印刷する</th><td>表示中の日付の「名簿印刷」画面を開きます。</td></tr>
+			<tr><th>30 秒ごとに自動更新</th><td>チェックすると 30 秒ごとに画面を読み込み直します。チェック状態はブラウザーごとに記憶されます。受付中に開きっぱなしにするときに使います。</td></tr>
+			<tr><th>最後の自動解放</th><td>無断キャンセルの解放処理が最後に動いた日時。長時間更新されていない場合は定期処理が止まっている可能性があります（4-4 を参照）。</td></tr>
+		</tbody>
+	</table>
+
+	<h4>集計</h4>
+	<table>
+		<tbody>
+			<tr><th>定員合計</th><td>その日の全枠の合計定員（馬の種類ごとの定員の合計）。「中止」の枠も含む</td></tr>
+			<tr><th>予約人数</th><td>「予約済み」と「来場済み」の人数の合計</td></tr>
+			<tr><th>来場済み</th><td>受付を済ませた人数</td></tr>
+			<tr><th>未来場</th><td>「予約済み」のまま受付していない人数</td></tr>
+			<tr><th>無断キャンセル</th><td>締切を過ぎて空きに戻された人数</td></tr>
+			<tr><th>集金予定額</th><td>「予約済み」と「来場済み」の支払額 × 人数の合計。馬の種類に支払額を登録していて、金額が 0 円でないときだけ表示（23-7）</td></tr>
+			<tr><th>来場済み分</th><td>「来場済み」だけの支払額 × 人数の合計。受付で受け取った現金と突き合わせる金額</td></tr>
+		</tbody>
+	</table>
+
+	<h3>6-2. 時間ごと・馬ごとの未来場</h3>
+	<p>縦に時間枠、横にその日に出す馬の種類を並べた表です。どの時間のどの馬で、まだ来ていない人が何人いるかが一目で分かります。</p>
+	<table>
+		<thead><tr><th style="width:36mm;">表示</th><th>意味</th></tr></thead>
+		<tbody>
+			<tr><th>未来場 N（大きい数字）</th><td>その枠・その馬で「予約済み」のまま受付していない人数</td></tr>
+			<tr><th>来場 N／予約 N・残り N</th><td>来場済みの人数、予約人数（予約済み＋来場済み）、まだ受け付けられる人数</td></tr>
+			<tr><th>無断キャンセル N（赤字）</th><td>無断キャンセルになった人数。1 人以上いるときだけ表示</td></tr>
+			<tr><th>—</th><td>その枠ではその馬を出していない</td></tr>
+			<tr><th>黄色のマス</th><td>未来場の人がいる（開始前）</td></tr>
+			<tr><th>赤いマス</th><td>開始時刻を過ぎても未来場の人がいる。遅れている方がいないか確認する。「中止」の枠には色を付けない</td></tr>
+			<tr><th>合計（最下行）</th><td>その日の馬の種類ごとの合計</td></tr>
+		</tbody>
+	</table>
+	<p>左端の時間を押すと、その枠の予約一覧（6-4）が開きます。いま開いている枠の行は青い線で囲まれます。</p>
+
+	<h3>6-3. 時間枠の切り替え</h3>
+	<p>表の下に、時間枠ごとのボタン（開始時刻と「来場 来場人数／予約人数」。無断キャンセルがあれば「・無断 N」）が並びます。押した枠の予約一覧だけが下に表示されます。開いた時点では、<b>今の時間の枠</b>（まだ終わっていない最初の枠。すべて終わっていれば最後の枠）が選ばれます。<span class="kbd">すべて</span> を押すと、その日のすべての枠の一覧を続けて表示します。</p>
+
+	<h3>6-4. 時間枠ごとの予約一覧</h3>
+	<figure class="wide"><img src="assets/admin-dashboard-card.png" alt="" /><figcaption>時間枠ごとのカード。上に枠の状況、下にその枠の予約の一覧が並ぶ。</figcaption></figure>
+	<p>カードの 1 行目は馬の種類ごとの「頭数・定員・残り・未来場」、2 行目は「予約人数／来場人数／枠の状態」です。<span class="kbd">頭数・定員を変更</span> を押すと、「時間枠」画面でこの枠の編集フォームが開きます（運営スタッフ以上）。</p>
+	<table>
+		<thead><tr><th style="width:26mm;">列</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>受付番号</th><td>No.0001 形式の通し番号。来場者の整理券・確認メールにも同じ番号が載る</td></tr>
+			<tr><th>お名前</th><td>予約者の氏名。当日予約で登録した予約には「当日枠」、写真掲載を希望しない方には「写真掲載NG」の印が付き、備考があれば下に表示。同じメールアドレスで、ほかの予約が無断キャンセルになったことがある方には「無断キャンセル歴あり（N 回）」の印が付く（すべての日の記録から数え、中止した枠の分は数えない）</td></tr>
+			<tr><th>乗る馬</th><td>馬の種類の名前</td></tr>
+			<tr><th>体格</th><td>身長 / 体重 / 年齢。当日予約は「—」</td></tr>
+			<tr><th>人数</th><td>Web 予約は常に 1。当日予約はまとめて登録した人数</td></tr>
+			<tr><th>支払</th><td>乗る馬の当日の支払額（予約した時点の金額）</td></tr>
+			<tr><th>状態</th><td>予約済み／来場済み／自己キャンセル／無断キャンセル（24 章を参照）。無断キャンセルの行は色付きで表示</td></tr>
+			<tr><th>受付時刻</th><td>来場済みにした時刻</td></tr>
+			<tr><th>メール</th><td>送り先と、確認メールの送信状況（送信済み／未送信）。未送信は送信に失敗したことを表す。メールアドレスのない予約（当日予約）は「なし」</td></tr>
+		</tbody>
+	</table>
+
+	<h4>予約ごとの操作</h4>
+	<table>
+		<thead><tr><th style="width:30mm;">ボタン</th><th style="width:34mm;">表示される状態</th><th>動作</th></tr></thead>
+		<tbody>
+			<tr><th>来場済みにする</th><td>予約済み・無断キャンセル</td><td>来場済みにし、受付時刻を記録する。無断キャンセルの予約にも使える（そのとき空きがあるかは確認しないので、先に残りを確認する）</td></tr>
+			<tr><th>無断キャンセル</th><td>予約済み</td><td>無断キャンセルにして、人数分を空きに戻す。締切前に「来ない」と分かったときに使う</td></tr>
+			<tr><th>取消</th><td>予約済み</td><td>自己キャンセル扱いにして、人数分を空きに戻す。電話などで取消の連絡があったときに使う</td></tr>
+			<tr><th>予約済みに戻す</th><td>来場済み・自己キャンセル・無断キャンセル</td><td>予約済みに戻し、受付時刻・取消時刻を消す。誤操作の取り消し用。定員の確認はしないので、枠が埋まっている場合は超過する。締切を過ぎた枠では、次の自動処理で再び無断キャンセルになる（23-1）</td></tr>
+			<tr><th>メール再送</th><td>メールアドレスがある予約</td><td>確認メールをもう一度送り、送信状況を更新する</td></tr>
+			<tr><th>整理券を表示</th><td>すべて</td><td>来場者が見るのと同じ整理券ページを新しいタブで開く。QR をその場で見せたいときに使う</td></tr>
+			<tr><th>削除</th><td>すべて（運営スタッフ・サイト管理者だけに表示）</td><td>確認のあと、予約を記録ごと削除する。来場済みの予約も消せ、集計・名簿・CSV からも消える。元に戻せない。テストで入れた予約や、二重に登録した予約を消すときに使う</td></tr>
+		</tbody>
+	</table>
+	<div class="note"><b class="t">予約のない方の登録</b>カードの下の <span class="kbd">当日予約（予約のない方を登録する）を開く</span> から「当日予約」画面に移動します（8 章）。以前の版でダッシュボードの一番下にあった登録フォームは、この画面に移りました。</div>
+
+	<h3>6-5. 過去の記録</h3>
+	<p><span class="kbd">体験乗馬</span> → <span class="kbd">過去の記録</span> は、<b>昨日までの日</b>を見るための画面です。来年の参考にできるよう、記録は「データの削除」（13-10）で消さない限りそのまま残ります。</p>
+	<ul>
+		<li>開くと、記録のある最も新しい日が表示されます。日付の切り替え・検索・集計・予約一覧は当日ダッシュボードと同じです。</li>
+		<li>表の見出しは「時間ごと・馬ごとの状況」になり、色の説明は出ません。時間枠のボタンは最初の枠が選ばれた状態で開きます。</li>
+		<li>操作ボタン（未来場を解放・受付画面・名簿・自動更新）と、当日予約へのリンクはありません。</li>
+		<li>予約ごとの操作ボタンは表示されるので、終わった日の記録を誤って変えないよう注意してください。</li>
+		<li>過去の日の記録がないときは「過去の記録はまだありません。」と表示されます。</li>
+	</ul>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">7</span>受付（QR チェックイン）</h2>
+	<p class="lead">来場者の整理券（QR）を読み取って、来場を記録する画面です。スマートフォン・タブレットでの使用を前提にしています。</p>
+
+	<div class="row">
+		<figure class="phone"><img src="assets/checkin-phone.png" alt="" /><figcaption>スマートフォンで開いた受付画面。</figcaption></figure>
+		<div>
+			<h4>画面の構成（上から）</h4>
+			<table>
+				<tbody>
+					<tr><th>照合結果</th><td>直前に照合した結果。大きく表示される</td></tr>
+					<tr><th>カメラ映像</th><td>読み取り中は白い枠（読み取り位置の目安）が出る</td></tr>
+					<tr><th>状態の表示</th><td>「カメラを起動しています…」「QR コードをカメラに向けてください。」など</td></tr>
+					<tr><th>カメラで読み取る／停止</th><td>カメラの開始と停止</td></tr>
+					<tr><th>写真で読み取る</th><td>写真 1 枚から読み取る（7-3）</td></tr>
+					<tr><th>カメラの状態</th><td>動かないときの手がかり（7-6）</td></tr>
+					<tr><th>手動照合</th><td>URL・トークンを入力して照合（7-4）</td></tr>
+					<tr><th>氏名で探す</th><td>今日の予約を名前で検索（7-4）</td></tr>
+					<tr><th>直近の受付</th><td>今日受け付けた最新 10 件</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<h3>7-1. カメラで読み取る</h3>
+	<ol class="steps">
+		<li><span class="kbd">カメラで読み取る</span> を押します。初回はブラウザーからカメラの使用許可を求められるので許可します。</li>
+		<li>映像に白い枠が出たら、QR を枠の中に、画面の半分程度の大きさで写します。</li>
+		<li>読み取ると自動で照合され、カメラ映像の上に結果が数秒間大きく表示されます（OK のときは緑の「✓ 受付しました」。Android では端末が振動します）。表示をタップすると、すぐに次の読み取りに戻ります。来場者の整理券の画面も、数秒で「✓ 受付済み」に切り替わります（15 章）。</li>
+		<li>そのまま次の QR を写せば続けて読み取れます。同じ QR を 5 秒以内に読んでも二重には照合しません。</li>
+		<li>終わったら <span class="kbd">停止</span> を押します。画面を離れたときも自動で止まります。</li>
+	</ol>
+	<p>8 秒ほど読み取れない状態が続くと、状態の表示が写し方の案内に変わります。読み取りには、ブラウザーの標準機能（BarcodeDetector）が使える端末ではそれを、使えない端末（iPhone / iPad、Windows など）では同梱のライブラリ（jsQR）を使います。どちらになったかは「カメラの状態」の「読み取り方式」で分かります。</p>
+
+	<h3>7-2. 照合結果の種類</h3>
+	<table>
+		<thead><tr><th style="width:22mm;">表示</th><th style="width:40mm;">状況</th><th>対応</th></tr></thead>
+		<tbody>
+			<tr><th>OK</th><td>予約済みの整理券。来場済みにした</td><td>名前・乗る馬・集金額を確認して案内する。予約時間の前後 10 分から外れていると「予約時間は…です。時間をご確認ください。」が出る（記録はされている）</td></tr>
+			<tr><th>使用済み</th><td>すでに来場済み</td><td>受付時刻が出る。二重受付・同じ QR の使い回しでないか確認する</td></tr>
+			<tr><th>時間切れ</th><td>締切を過ぎて無断キャンセルになった予約</td><td>ダッシュボードで残りを確認し、空きがあれば <span class="kbd">それでも来場済みにする</span> で受け付ける（定員は確認されない。23-1）</td></tr>
+			<tr><th>取消済み</th><td>本人またはスタッフが取り消した予約</td><td>空きがあれば「当日予約」で登録する（8 章）</td></tr>
+			<tr><th>該当なし</th><td>このシステムの整理券ではない、または予約が削除された</td><td>氏名で探す。見つからなければ「当日予約」で登録する</td></tr>
+			<tr><th>読み取れませんでした</th><td>QR の中身が整理券の形式でない</td><td>もう一度読み取るか、手動照合に切り替える</td></tr>
+		</tbody>
+	</table>
+	<div class="row">
+		<figure class="small"><img src="assets/checkin-result-already.png" alt="" /><figcaption>使用済み</figcaption></figure>
+		<figure class="small"><img src="assets/checkin-result-no_show.png" alt="" /><figcaption>時間切れ</figcaption></figure>
+		<figure class="small"><img src="assets/checkin-result-not_found.png" alt="" /><figcaption>該当なし</figcaption></figure>
+	</div>
+	<p>OK のときは、名前・人数・乗る馬（体格つき）・集金額・時間枠が表示されます。当日予約で複数名をまとめた予約では「集金: 300 円 × 2 名 = 600 円」のように合計も出ます。</p>
+
+	<h3>7-3. 写真で読み取る</h3>
+	<p>カメラ映像が使えない環境（http で開いている、SNS アプリ内のブラウザー、カメラの許可が得られないなど）でも使える読み取り方法です。ボタンを押すとカメラ（または写真の選択）が開くので、QR を画面いっぱいに写して 1 枚撮ると、その写真から読み取って照合します。読み取れないときは「写真から QR を読み取れませんでした」と表示されるので、明るい場所で撮り直してください。</p>
+
+	<h3>7-4. 手動照合・氏名で探す</h3>
+	<figure class="phone"><img src="assets/checkin-manual.png" alt="" /></figure>
+	<table>
+		<tbody>
+			<tr><th>手動照合</th><td>来場者の確認メールにある整理券の URL をそのまま貼り付けるか、URL の <code>et_token=</code> 以降（40 文字）を入力して <span class="kbd">照合する</span>。結果は QR と同じ</td></tr>
+			<tr><th>氏名で探す</th><td><b>今日の</b>予約を、名前・メールアドレス・トークンの一部で検索する（最大 30 件）。「予約済み」「無断キャンセル」の予約には <span class="kbd">来場済みにする</span> が出る。通信障害のあとで、紙の名簿でチェックした分をまとめて反映するときにも使う</td></tr>
+		</tbody>
+	</table>
+
+	<h3>7-5. 直近の受付</h3>
+	<p>今日来場済みにした最新 10 件が、受付時刻・名前・人数とともに表示されます。読み取りの取り違えに気づくための表示です。</p>
+
+	<h3>7-6. カメラの状態</h3>
+	<p>画面下の「カメラの状態（うまく動かないとき）」を開くと、次の値が表示されます。</p>
+	<table>
+		<thead><tr><th style="width:36mm;">項目</th><th>見かたと対処</th></tr></thead>
+		<tbody>
+			<tr><th>https で表示</th><td>「なし（http:）」ならカメラは使えない。https の URL で開き直す</td></tr>
+			<tr><th>カメラ API</th><td>「なし」ならブラウザーがカメラ機能に対応していない。SNS アプリ内のブラウザーなら Safari / Chrome で開き直す。対応していないブラウザーなら「写真で読み取る」</td></tr>
+			<tr><th>QR 読み取りライブラリ</th><td>「なし」なら <code>jsqr.min.js</code> が読み込めていない。ボタンを押した時点で読み込み直しを試みる。それでも「なし」ならプラグインのファイル不足か、最適化プラグインの JavaScript 結合を疑う（4-2）</td></tr>
+			<tr><th>読み取り方式</th><td>BarcodeDetector（ブラウザー標準）または jsQR（同梱）</td></tr>
+			<tr><th>映像サイズ</th><td>「0 × 0」のままなら映像が届いていない。再読み込み、他のアプリでカメラを使っていないかの確認、「写真で読み取る」</td></tr>
+			<tr><th>カメラ</th><td>使用中のカメラ名と状態（live＝動作中）</td></tr>
+			<tr><th>解析したフレーム数</th><td>増えていれば読み取り処理は動いている。QR の写し方（大きさ・明るさ・ピント）を見直す</td></tr>
+			<tr><th>最後のエラー</th><td>NotAllowedError＝カメラの許可がない（iPhone は 設定 → Safari → カメラ）、NotFoundError＝カメラがない、NotReadableError＝他のアプリが使用中</td></tr>
+		</tbody>
+	</table>
+
+</div>
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">8</span>当日予約</h2>
+	<p class="lead">予約なしで来場した方を、今日の空いている枠にその場で登録する画面です。スマートフォンで使う前提の作りで、受付スタッフも使えます。登録と同時に「来場済み」になります。</p>
+
+	<div class="row">
+		<figure class="phone"><img src="assets/admin-walkin.png" alt="" style="height:118mm;object-fit:cover;object-position:top;" /><figcaption>スマートフォンで開いた当日予約の画面（上部）。登録した直後は、上に緑の「✓ 登録しました」が出る。</figcaption></figure>
+		<div>
+			<h4>画面の構成（上から）</h4>
+			<table>
+				<tbody>
+					<tr><th>登録の結果</th><td>直前に登録した内容。「時間帯／乗る馬／人数」、集金額（支払額 × 人数）、受付番号と名前を大きく表示する</td></tr>
+					<tr><th>時間枠ごとのカード</th><td>今日の枠を時刻順に並べる。「中止」の枠と、すでに終わった枠は出ない。「受付停止」の枠には印が付く</td></tr>
+					<tr><th>馬の種類ごとの行</th><td>その枠に出している馬ごとに、名前・支払額・「残り N 名」（空きがなければ「満員」）と、人数・お名前（任意）・<span class="kbd">登録</span> が並ぶ。定員 0 の馬は出ない</td></tr>
+					<tr><th>終了した時間枠も表示する</th><td>終わった枠がある場合に出るリンク（括弧内は枠の数）。遅れて来た方を終わった枠に入れるときに使う。<span class="kbd">これからの時間枠だけを表示する</span> で元に戻る</td></tr>
+					<tr><th>今日の当日予約</th><td>今日この画面で登録した予約（予約済み・来場済みのもの）を新しい順に最大 15 件。間違えたときの <span class="kbd">取消</span> がある</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<h3>8-1. 登録の手順</h3>
+	<ol class="steps">
+		<li><span class="kbd">体験乗馬</span> → <span class="kbd">当日予約</span> を開きます（当日ダッシュボードの下のボタンからも開けます）。</li>
+		<li>乗る方の年齢・身長・体重が、乗る馬の条件に合っているかを目で確認します（システムは体格の条件を確認しません）。</li>
+		<li>入れたい時間枠のカードで、乗る馬の行の<b>人数</b>を選びます。選べるのは 1 名から「当日予約 1 件あたりの上限人数」（既定 4 名）まで、かつ残り人数までです。家族などで同じ馬にまとめて乗る場合に人数を増やします。</li>
+		<li>必要なら<b>お名前</b>を入れます（空欄でも構いません）。</li>
+		<li><span class="kbd">登録</span> を押します。上に「✓ 登録しました」と集金額が出たら完了です。金額を集金して案内します。</li>
+	</ol>
+
+	<h3>8-2. 登録される内容</h3>
+	<table>
+		<thead><tr><th style="width:30mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>お名前</th><td>入力した名前（50 文字以内）。空欄なら「当日受付」</td></tr>
+			<tr><th>乗る馬・人数</th><td>登録した行の馬と、選んだ人数</td></tr>
+			<tr><th>支払額</th><td>その馬の種類の当日の支払額（9 章）。集金予定額にも入る</td></tr>
+			<tr><th>状態</th><td>来場済み（登録した時刻が受付時刻になる）</td></tr>
+			<tr><th>受付経路</th><td>当日枠（ダッシュボード・名簿・CSV で「当日枠」と表示）</td></tr>
+			<tr><th>メールアドレス・体格・備考</th><td>記録しない。確認メールも送らない。整理券が必要な場合は、当日ダッシュボードの <span class="kbd">整理券を表示</span> で画面を見せる</td></tr>
+		</tbody>
+	</table>
+	<div class="note"><b class="t">当日予約で確認されること・されないこと</b>枠全体の定員と、馬の種類ごとの定員は確認されます（いっぱいなら「満員」と表示され、登録できません）。一方、予約受付の締切や「受付停止」は確認しないので、始まっている枠・受付停止の枠にも登録できます。「中止」の枠は表示されず、登録できません。</div>
+
+	<h3>8-3. 間違えて登録したとき</h3>
+	<p>画面の下の「今日の当日予約」で、該当する行の <span class="kbd">取消</span> を押します。確認のあと「自己キャンセル」扱いになり、人数分の枠が空きます。正しい内容で登録し直してください。当日ダッシュボードの予約一覧からも同じ操作ができます（6-4）。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">9</span>馬の種類</h2>
+	<p class="lead">体験で出す馬の種類（ポニー、馬など）を登録する画面です。来場者が入力した身長・体重・年齢が条件に合う馬だけを案内し、2 種類以上に合う場合は来場者が選びます。どの馬を何頭・何人分出すかは「時間枠」画面で枠ごとに決めます（10 章）。運営スタッフとサイト管理者が使えます。</p>
+
+	<h3>9-1. 一覧</h3>
+	<figure class="wide"><img src="assets/admin-horses-list.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:30mm;">列</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>名前</th><td>来場者の画面・整理券・メール・ダッシュボードに表示される名前</td></tr>
+			<tr><th>説明</th><td>来場者が時間枠と馬を選ぶ画面に表示される説明</td></tr>
+			<tr><th>乗れる条件</th><td>年齢・身長・体重の条件をまとめたもの（例: 12歳以下・140cm以下・40kg以下）。条件がなければ「制限なし」</td></tr>
+			<tr><th>当日のお支払い</th><td>この馬に乗る方の当日の支払額。未登録なら「—」</td></tr>
+			<tr><th>受付</th><td>受付する／停止中</td></tr>
+			<tr><th>操作</th><td><span class="kbd">編集</span>（下のフォームで編集）、<span class="kbd">削除</span>（9-4）</td></tr>
+		</tbody>
+	</table>
+	<p>初めて有効化したときは、次の 2 種類が入っています。あとから自由に変更・追加できます。</p>
+	<table>
+		<thead><tr><th style="width:20mm;">名前</th><th>乗れる条件</th><th style="width:30mm;">当日のお支払い</th><th style="width:16mm;">表示順</th></tr></thead>
+		<tbody>
+			<tr><th>ポニー</th><td>12 歳以下・身長 140cm 以下・体重 40kg 以下</td><td>300 円</td><td>10</td></tr>
+			<tr><th>馬</th><td>6 歳以上・身長 120cm 以上・体重 80kg 以下</td><td>500 円</td><td>20</td></tr>
+		</tbody>
+	</table>
+
+	<h3>9-2. 追加・編集</h3>
+	<figure class="wide"><img src="assets/admin-horses-form.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:34mm;">項目</th><th style="width:26mm;">範囲</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>名前</th><td>必須・50 文字</td><td>例: ポニー、馬</td></tr>
+			<tr><th>説明</th><td>255 文字</td><td>馬を選ぶ画面で、名前の下に表示する（任意）</td></tr>
+			<tr><th>年齢</th><td>0〜120 歳</td><td>「○歳以上 〜 ○歳以下」の下限と上限</td></tr>
+			<tr><th>身長</th><td>0〜250cm</td><td>同じく下限と上限</td></tr>
+			<tr><th>体重</th><td>0〜250kg</td><td>同じく下限と上限。上限は参加できる体重の上限にも使う（9-3）</td></tr>
+			<tr><th>当日のお支払い（円）</th><td>0〜65535</td><td>この馬に乗る方の当日の支払額。申込み画面・整理券・メールに表示し、ダッシュボードの集金額の計算にも使う。空欄なら金額を表示しない</td></tr>
+			<tr><th>表示順</th><td>0〜999</td><td>小さい順に並ぶ（来場者の画面・時間枠の入力欄・ダッシュボードの表）</td></tr>
+			<tr><th>受付</th><td>—</td><td>「この馬の予約を受け付ける」。チェックを外すと来場者の画面に出なくなる（入っている予約はそのまま残る）</td></tr>
+		</tbody>
+	</table>
+	<p>条件は、空欄（または 0）の項目は「制限なし」です。必要なところだけ入れます。下限が上限より大きいと「下限が上限より大きくなっている条件があります。」と表示され、保存されません。</p>
+
+	<h3>9-3. 乗れる馬の決まり方</h3>
+	<p>予約ページのステップ 1 で入力された身長・体重・年齢から、次の順に判定します。送信時にもサーバー側で判定し直すので、画面を書き換えても乗れない馬は予約できません。</p>
+	<ol class="steps">
+		<li>年齢が「参加できる最低年齢」（設定、既定 5 歳。13-3）未満なら予約できません。</li>
+		<li>体重が「参加できる体重の上限」を超えると予約できません。上限は、受付中の馬の種類の「体重の上限」のうち最も大きい値です（既定では 80kg）。体重の上限がない馬が 1 つでもあれば、この確認は行いません。</li>
+		<li>受付中の馬の種類のうち、年齢・身長・体重の条件をすべて満たすものが「乗れる馬」です。ただし、今日以降の時間枠（「中止」を除く）で定員が 1 以上ある枠が 1 つもない馬は案内しません（時間枠がまったく登録されていない間は絞り込みません）。</li>
+		<li>乗れる馬が 1 種類ならその馬に決まり、2 種類以上なら来場者が時間枠と一緒に選びます。1 つもなければ予約できません。</li>
+	</ol>
+	<table>
+		<thead><tr><th>既定の 2 種類での例</th><th>ポニーの条件</th><th>馬の条件</th><th>結果</th></tr></thead>
+		<tbody>
+			<tr><td>5 歳・110cm・20kg</td><td class="c">満たす</td><td class="c">満たさない</td><td><b>ポニーのみ</b>（馬の年齢・身長に届かない）</td></tr>
+			<tr><td>10 歳・130cm・30kg</td><td class="c">満たす</td><td class="c">満たす</td><td><b>どちらか選べる</b></td></tr>
+			<tr><td>大人全般、13 歳・135cm・38kg</td><td class="c">満たさない</td><td class="c">満たす</td><td><b>馬のみ</b>（ポニーの年齢を超える）</td></tr>
+			<tr><td>6 歳・110cm・45kg</td><td class="c">満たさない</td><td class="c">満たさない</td><td><b>予約できない</b>（ポニーの体重を超え、馬の身長に届かない）</td></tr>
+		</tbody>
+	</table>
+	<p>判定の結果は、予約ページに「体格に合わせて、ポニーでご案内します。」「ポニーと馬のどちらでもご案内できます。乗りたい馬をお選びください。」のように表示されます（14-2）。</p>
+
+	<h3>9-4. 削除と受付の停止</h3>
+	<ul>
+		<li>時間枠か予約で一度でも使われた馬の種類は削除できません（「この馬は時間枠か予約で使われているため削除できません。」と表示）。受付をやめる場合は「受付」のチェックを外します。</li>
+		<li>受付を停止した馬は、来場者の画面に出なくなり、時間枠の入力欄にも出なくなります（その枠ですでに使っている場合は「（受付停止中）」と表示）。</li>
+		<li>名前を変えると、すでに入っている予約の「乗る馬」の表示も新しい名前になります。支払額を変えても、すでに入っている予約の支払額は変わりません（23-7）。</li>
+	</ul>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">10</span>時間枠</h2>
+	<p class="lead">受付の単位となる時間枠と、枠ごとに出す馬の頭数・定員を管理します。運営スタッフとサイト管理者が使えます。馬の種類は、先に「馬の種類」画面で登録しておきます（9 章）。</p>
+
+	<h3>10-1. 一覧</h3>
+	<figure class="wide"><img src="assets/admin-slots-list.png" alt="" /></figure>
+	<p>ふだんは<b>今日以降</b>の時間枠だけが並びます。見出しの下の日付で絞り込めます（「これからの枠すべて」で今日以降の全日付）。昨日までの枠がある場合は <span class="kbd">過去の時間枠（アーカイブ・N 日分）を見る</span> が出て、アーカイブ（新しい日から順。今年以外の日は年も表示）に切り替えられます。アーカイブでは追加・一括作成のフォームは出ず、<span class="kbd">編集</span> を押したときだけ編集フォームが出ます。<span class="kbd">← これからの時間枠に戻る</span> で戻ります。</p>
+	<table>
+		<thead><tr><th style="width:44mm;">列</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>日付・時間</th><td>開催日と開始〜終了時刻</td></tr>
+			<tr><th>馬（頭数／定員／残り）</th><td>その枠に出す馬の種類ごとに 1 行ずつ、「ポニー 1 / 4 / 3」のように頭数・定員・まだ受け付けられる人数。馬を 1 つも出していない枠は「馬が未設定」</td></tr>
+			<tr><th>予約</th><td>予約人数 ／ 合計定員（予約済み＋来場済み）</td></tr>
+			<tr><th>来場</th><td>来場済みの人数</td></tr>
+			<tr><th>状態</th><td>受付中／受付停止／中止（10-3）</td></tr>
+			<tr><th>備考</th><td>来場者の一覧にも表示される短いメモ</td></tr>
+			<tr><th>操作</th><td><span class="kbd">編集</span>（下のフォームで編集）、<span class="kbd">削除</span>（10-4）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>10-2. 追加・編集</h3>
+	<figure class="wide"><img src="assets/admin-slots-edit.png" alt="" /><figcaption>編集中のフォーム。追加のときも同じ項目が並ぶ（中止のお知らせのチェックは編集のときだけ）。</figcaption></figure>
+	<table>
+		<thead><tr><th style="width:30mm;">項目</th><th style="width:26mm;">範囲</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>日付</th><td>—</td><td>開催日</td></tr>
+			<tr><th>開始時刻・終了時刻</th><td>終了＞開始</td><td>枠の時間帯。無断キャンセルの締切は開始時刻から、予約受付の締切は終了時刻から計算する（13-1）</td></tr>
+			<tr><th>出す馬：頭数</th><td>0〜50</td><td>馬の種類ごとに、その枠に出す頭数（表示用。残り人数の計算には使わない）</td></tr>
+			<tr><th>出す馬：定員（人）</th><td>0〜999</td><td>馬の種類ごとに、その枠で受け入れる人数。0 にした馬は、この枠では受付をしない。頭数も定員も 0 の馬は、その枠に出さない扱いになる</td></tr>
+			<tr><th>状態</th><td>—</td><td>受付中／受付停止／中止（10-3）</td></tr>
+			<tr><th>中止のお知らせ</th><td>—</td><td>「「中止」にしたら、この枠の予約済みの人（N 名）に中止のお知らせメールを送る」。編集中の枠が中止でないときだけ表示され、最初からチェックが入っている（10-3）</td></tr>
+			<tr><th>備考</th><td>255 文字</td><td>来場者の一覧・名簿にも表示される</td></tr>
+		</tbody>
+	</table>
+	<p>「出す馬」の表には、受付中の馬の種類が表示順に並び、名前の下に乗れる条件が出ます。新しく追加するときは、受付中の馬に「1 頭・定員 4 名」が最初から入っています。受付を停止した馬は、その枠ですでに使っている場合だけ「（受付停止中）」として表示されます。</p>
+	<p>合計定員は、馬の種類ごとの定員の合計で自動的に決まります。定員を減らしても、すでに入っている予約は消えません（残りは 0 と表示されます）。あふれた方には個別に案内してください。</p>
+
+	<h3>10-3. 状態の違いと中止</h3>
+	<table>
+		<thead><tr><th style="width:22mm;">状態</th><th>来場者の予約</th><th>当日予約の登録</th><th>予約済みの人の受付</th><th>来場者の一覧での表示</th></tr></thead>
+		<tbody>
+			<tr><th>受付中</th><td class="ok">できる</td><td class="ok">できる</td><td class="ok">できる</td><td>残り人数</td></tr>
+			<tr><th>受付停止</th><td class="ng">できない</td><td class="ok">できる</td><td class="ok">できる</td><td>この時間枠は受付を停止しています。</td></tr>
+			<tr><th>中止</th><td class="ng">できない</td><td class="ng">できない</td><td class="ok">できる</td><td>この時間枠は中止になりました。</td></tr>
+		</tbody>
+	</table>
+	<p>「受付停止」は満席扱いにしたいとき・馬を休ませたいときに、「中止」は荒天などでその枠を行わないときに使います。</p>
+	<p>中止にするときは、状態を「中止」にし、<b>中止のお知らせのチェックを入れたまま</b> <span class="kbd">更新する</span> を押します。その枠の「予約済み」の方に、設定の「中止のお知らせの件名」「中止のお知らせの本文」（13-7）で、日時・乗る馬・人数・受付番号を添えたメールが送られます。結果は画面の上に「中止のお知らせメールを N 件送りました。」と表示され、メールアドレスのない予約（当日予約など）があればその件数も出るので、会場で知らせてください。送れなかった分があれば件数が表示されます。</p>
+	<ul>
+		<li>中止にしても、予約は自動では取り消されません（「予約済み」のまま残ります）。</li>
+		<li>中止の枠の予約は、締切を過ぎても無断キャンセルにはなりません（23-1）。無断キャンセル歴の回数にも数えません。</li>
+		<li>お知らせのチェックを外して更新した場合はメールを送りません。いったん中止にした枠をあとからお知らせだけ送ることはできないので、そのときは一斉メールではなく個別に連絡してください（一斉メールは中止の枠の予約を宛先にしません）。</li>
+	</ul>
+
+	<h3>10-4. 削除</h3>
+	<p>「予約済み」または「来場済み」の予約が 1 件でもある枠は削除できません（「予約が入っている時間枠は削除できません。中止にする場合はステータスを「中止」に変更してください。」と表示）。行わない枠は「中止」にしてください。削除できるのは予約がない枠か、取消・無断キャンセルの予約しかない枠で、その予約も一緒に削除されます。</p>
+
+	<h3>10-5. 一括作成</h3>
+	<figure class="wide"><img src="assets/admin-slots-bulk.png" alt="" /></figure>
+	<p>開始時刻から終了時刻まで、同じ長さの枠をまとめて作ります（前日までの準備用。初期値は 10:00〜15:00、長さ 20 分、休憩 0 分）。作った枠はあとから個別に編集できます。一度に作れるのは 200 枠までです。</p>
+	<table>
+		<thead><tr><th style="width:36mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>日付・開始・終了</th><td>作る範囲</td></tr>
+			<tr><th>1 枠の長さ（分）</th><td>5〜240 分</td></tr>
+			<tr><th>枠と枠の間の休憩（分）</th><td>0〜240 分。馬の交代・水やりの時間など</td></tr>
+			<tr><th>出す馬</th><td>馬の種類ごとの頭数・定員。作るすべての枠に同じ値が入る（受付中の馬に 1 頭・4 名が最初から入っている）。定員を 0 にした馬は出さない</td></tr>
+			<tr><th>備考</th><td>作るすべての枠に同じ備考が入る</td></tr>
+		</tbody>
+	</table>
+	<table>
+		<thead><tr><th>設定例</th><th>作られる枠</th></tr></thead>
+		<tbody>
+			<tr><td>10:00〜12:00、長さ 20 分、休憩 0 分</td><td>10:00, 10:20, 10:40, 11:00, 11:20, 11:40 の 6 枠</td></tr>
+			<tr><td>10:00〜12:00、長さ 20 分、休憩 5 分</td><td>10:00, 10:25, 10:50, 11:15, 11:40 の 5 枠（最後の枠は 12:00 ちょうどに終わる）</td></tr>
+			<tr><td>13:00〜15:20、長さ 30 分、休憩 10 分</td><td>13:00, 13:40, 14:20 の 3 枠（15:00 からの枠は 15:20 を超えるので作らない）</td></tr>
+		</tbody>
+	</table>
+	<p>終了時刻をはみ出す枠は作りません。作成すると「時間枠を N 件作成しました。」と表示されます。同じ時間帯に 2 回実行すると枠が重複して作られるので、やり直すときは先に不要な枠を削除してください。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">11</span>名簿印刷</h2>
+	<p class="lead">時間帯別の予約者名簿を印刷し、CSV に書き出す画面です。通信障害に備えた紙の名簿と、終了後の記録に使います。</p>
+	<figure class="wide"><img src="assets/admin-roster.png" alt="" /></figure>
+	<table>
+		<tbody>
+			<tr><th>表示</th><td>日付を選んで <span class="kbd">表示</span></td></tr>
+			<tr><th>印刷</th><td>ブラウザーの印刷を開く。印刷時は WordPress のメニューや案内文を消し、枠ごとに改ページされにくいレイアウトになる。PDF として保存することもできる</td></tr>
+			<tr><th>CSV を書き出す</th><td>その日の全予約（取消・無断キャンセルを含む）を <code>equiticket-日付.csv</code> で保存。Excel で文字化けしないよう BOM 付き UTF-8</td></tr>
+		</tbody>
+	</table>
+	<h4>名簿の列</h4>
+	<p>チェック（手書き用の □）、受付番号、お名前（写真掲載を希望しない方は「写真掲載NG」）、乗る馬、体格、人数、支払額、状態、トークン末尾、備考。「トークン末尾」は整理券 URL の最後の 6 文字（大文字）で、紙で照合するときに来場者の画面の URL と見比べるのに使います。</p>
+	<h4>CSV の列</h4>
+	<p>受付番号、日付、開始、終了、お名前、乗る馬、身長cm、体重kg、年齢、人数、支払額、メールアドレス、状態、受付時刻、受付経路（Web 予約／当日枠）、トークン末尾、写真、備考。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">12</span>一斉メール</h2>
+	<p class="lead">予約済みの方（まだ来場していない方）に、まとめてメールを送る画面です。前日に「来られなくなったら取り消してください」とお願いしておくと、無断キャンセルを減らせます。運営スタッフとサイト管理者が使えます。</p>
+
+	<h3>12-1. 宛先を選ぶ</h3>
+	<table>
+		<thead><tr><th style="width:30mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>日付</th><td>「すべての日」または時間枠が登録されている日付。選ぶとすぐに絞り込まれる</td></tr>
+			<tr><th>時間枠</th><td>「すべての枠」または選んだ日の枠。先に日付を選んだときだけ選べる</td></tr>
+			<tr><th>馬</th><td>「すべての馬」または馬の種類</td></tr>
+			<tr><th>絞り込む</th><td>条件を反映し、「宛先: N 件」と宛先の一覧を表示する（<span class="kbd">宛先の一覧を見る</span> で開閉。10 件以下なら最初から開いている。一覧に出るのは最初の 200 件までだが、送信はすべての宛先に行う）</td></tr>
+		</tbody>
+	</table>
+	<p>宛先になるのは、状態が<b>予約済み</b>で、メールアドレスがある予約だけです。来場済み・自己キャンセル・無断キャンセルの予約、メールアドレスのない当日予約、「中止」の枠の予約（中止のお知らせで別に連絡するため。10-3）には送りません。</p>
+
+	<h3>12-2. 文面を書く</h3>
+	<p>最初は、無断キャンセルを減らすためのお願いの文面が入っています（件名「【{event}】ご予約のキャンセルについてのお願い（{date} {start}〜）」。本文は、取り消し方の案内と整理券の URL を含む）。主催者の言葉に書き換えて使ってください。書いた件名と本文はログインしているユーザーごとに 1 日保存され、送信後や入力ミスで戻ったときにも消えません。<span class="kbd">最初の文面に戻す</span> で初めの文面に戻せます。</p>
+	<table>
+		<thead><tr><th style="width:30mm;">差し込み</th><th>置き換わる内容（予約ごと）</th></tr></thead>
+		<tbody>
+			<tr><th><code>{name}</code></th><td>予約者の名前</td></tr>
+			<tr><th><code>{date}</code></th><td>枠の日付（例: 9月27日(日)）</td></tr>
+			<tr><th><code>{start}</code> <code>{end}</code></th><td>開始時刻・終了時刻</td></tr>
+			<tr><th><code>{horse}</code></th><td>乗る馬</td></tr>
+			<tr><th><code>{people}</code></th><td>人数</td></tr>
+			<tr><th><code>{number}</code></th><td>受付番号（No.0012 の形式）</td></tr>
+			<tr><th><code>{ticket_url}</code></th><td>その方の整理券の URL。開くと整理券が表示され、<span class="kbd">予約を取り消す</span> で取り消せる</td></tr>
+			<tr><th><code>{event}</code></th><td>イベント名</td></tr>
+		</tbody>
+	</table>
+	<p>件名と本文の両方で使えます。設定の「メール末尾の署名」（13-7）は、本文に同じ文が書かれていなければ最後に自動で付きます。メールはテキスト形式で送ります。</p>
+
+	<h3>12-3. 送る</h3>
+	<ol class="steps">
+		<li><span class="kbd">自分宛てにテスト送信</span> を押します。宛先の 1 件目の予約の内容で差し込みをしたメールが、ログイン中の自分のアドレスに届きます（件名の先頭に「[テスト]」が付く）。</li>
+		<li>届いたメールで、差し込み・改行・URL を確認します。</li>
+		<li><span class="kbd">N 件に送信する</span> を押し、確認のダイアログで OK を押します。送信すると取り消せません。</li>
+		<li>画面の上に「一斉メールを N 件送りました。」と出ます。送れなかった分があれば件数が表示されます。</li>
+	</ol>
+	<div class="note"><b class="t">送信状況の記録</b>一斉メールを送っても、ダッシュボードのメール欄（確認メールの送信状況）は変わりません。宛先が多いと送信に時間がかかり、サーバーによっては 1 時間あたりの送信数に上限があります。数百件を超える場合は、日付や時間枠で分けて送ってください。</div>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">13</span>設定</h2>
+	<p class="lead">運営スタッフとサイト管理者が使えます。画面の一番上に「はじめにやること」があり、その下に次の順で設定項目が並びます。<span class="kbd">設定を保存</span> で「スタッフ用アカウント」より上の項目がまとめて保存されます。</p>
+
+	<h4>はじめにやること</h4>
+	<p>初期設定の手順を上から順に並べた一覧です。自動で判定できる 1〜3 には、終わっていれば緑の「済」、まだなら赤の「未」が付きます。</p>
+	<table>
+		<thead><tr><th style="width:8mm;" class="c">#</th><th style="width:52mm;">項目</th><th>「済」になる条件・内容</th></tr></thead>
+		<tbody>
+			<tr><td class="c">1</td><th>予約ページを用意する</th><td>予約ページが設定され、公開されていれば「済」。そのときは来場者用ページの URL が表示される（ポスター・チラシの QR はこの URL にする）。「未」のときは <span class="kbd">予約ページを自動で作成する</span> ボタンが出る（3-1）</td></tr>
+			<tr><td class="c">2</td><th>乗れる馬の種類を確認する</th><td>受付中の馬の種類が 1 つ以上あれば「済」。「馬の種類」を開くリンクがある（9 章）</td></tr>
+			<tr><td class="c">3</td><th>時間枠を登録する</th><td>時間枠が 1 つ以上あれば「済」。「時間枠」を開くリンクがある（10 章）</td></tr>
+			<tr><td class="c">4</td><th>このページの下にある文面を確認する</th><td>イベント名、料金とキャンセルの案内、同意事項、メール送信を、主催者で決めた内容に書き換えて保存する</td></tr>
+			<tr><td class="c">5</td><th>テストメールを送る</th><td>運用ツールから自分宛てに送り、届くか確認する（13-10）</td></tr>
+			<tr><td class="c">6</td><th>受付スタッフ用のアカウントを作る</th><td>必要な場合だけ（5 章）</td></tr>
+		</tbody>
+	</table>
+	<p>一覧の下には、申込みの 4 ステップの説明と、無断キャンセルの自動解放（WP-Cron）が登録済みかどうか（登録済みなら次回の実行日時）が表示されます。</p>
+
+	<h3>13-1. 基本設定</h3>
+	<figure class="wide"><img src="assets/admin-settings-01.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:44mm;">項目</th><th style="width:22mm;">既定値</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>イベント名</th><td>体験乗馬コーナー</td><td>予約ページの見出し、確認メールの件名・本文などに使う</td></tr>
+			<tr><th>予約ページ</th><td>未設定</td><td>3-1 で作った固定ページ</td></tr>
+			<tr><th>無断キャンセルの締切（分）</th><td>10</td><td>枠の<b>開始</b>からこの分数を過ぎても受付がない予約を無断キャンセルにする（0〜240）</td></tr>
+			<tr><th>予約受付の締切（終了の何分前まで）</th><td>0</td><td>枠の<b>終了時刻</b>を基準にする。0 なら終了時刻の直前まで予約できる。10:00〜10:20 の枠で 5 にすると 10:15 まで（0〜1440）。枠が始まったあとでも、締切までは Web から予約できる</td></tr>
+			<tr><th>当日予約 1 件あたりの上限人数</th><td>4</td><td>「当日予約」の画面で 1 件にまとめて登録できる人数（1〜20）。Web 予約は常に 1 名</td></tr>
+			<tr><th>1 人あたりの体験時間（分）</th><td>0</td><td>来場者の画面に「体験時間の目安」として表示。0 なら表示しない（0〜120）</td></tr>
+			<tr><th>同一メールの重複予約</th><td>許可</td><td>同じ枠に同じメールアドレスで複数予約できるか。家族を 1 つのアドレスで人数分申し込めるよう、既定で許可</td></tr>
+		</tbody>
+	</table>
+
+	<h3>13-2. デザイン（サイトに合わせる）</h3>
+	<figure class="wide"><img src="assets/admin-settings-02.png" alt="" /><figcaption>下に「表示の見本」が出るので、保存後に色と角の丸みを確認できる。</figcaption></figure>
+	<table>
+		<thead><tr><th style="width:30mm;">項目</th><th style="width:26mm;">既定値</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>メインカラー</th><td>#1f3a68（紺）</td><td>ボタン・見出し・残り人数のバッジの色。濃い色・薄い色・ボタンの文字色（白か黒か）は明るさから自動で決まる</td></tr>
+			<tr><th>角の丸み</th><td>控えめ（6px）</td><td>控えめ（6px）／大きめ（12px）／角ばり（丸みなし）</td></tr>
+			<tr><th>書体</th><td>テーマの書体を使う</td><td>チェックを外すと、読みやすさ優先のゴシック体で表示する</td></tr>
+		</tbody>
+	</table>
+	<p>対象は来場者向けの画面と受付画面です。サイトのロゴやヘッダーの色をスポイトツールで取得して入力すると合わせやすくなります。</p>
+
+	<h3>13-3. 参加条件</h3>
+	<figure class="wide"><img src="assets/admin-settings-03.png" alt="" /></figure>
+	<p>すべての馬に共通の条件です。馬の種類ごとの条件（年齢・身長・体重）と当日の支払額は「馬の種類」画面で登録します（9 章）。</p>
+	<table>
+		<thead><tr><th style="width:44mm;">項目</th><th style="width:16mm;">既定値</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>参加できる最低年齢</th><td>5 歳</td><td>これより下の年齢は、どの馬にも予約できない（0〜120）</td></tr>
+			<tr><th>保護者の同意が必要な年齢</th><td>18 歳</td><td>この年齢未満なら申込み画面に保護者同意のチェック（必須）を出す（0〜30）</td></tr>
+		</tbody>
+	</table>
+	<p>参加できる体重の上限は設定画面にはなく、馬の種類の「体重の上限」から自動で決まります（9-3）。</p>
+
+	<h3>13-4. 料金とキャンセルの案内</h3>
+	<figure class="wide"><img src="assets/admin-settings-04.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:40mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>当日のお支払い額</th><td>表示だけの欄です。「馬の種類」に登録した支払額を「ポニー 300 円／馬 500 円」のようにまとめて表示します（どの馬も同じ金額なら金額だけ。1 つも登録がなければ「（金額が登録されていません）」）。金額は「馬の種類」画面で変えます。来場者が選んだ馬の金額が、申込み画面・整理券・メールに表示されます</td></tr>
+			<tr><th>支払い方法の案内</th><td>申込み画面・整理券・メールに表示する文（例: 当日、受付で現金をお支払いください）</td></tr>
+			<tr><th>キャンセル・中止について</th><td>キャンセル期限や荒天時の扱い。申込み画面・整理券・メールに表示</td></tr>
+		</tbody>
+	</table>
+	<div class="note"><b class="t">キャンセル期限はシステムでは制限していません</b>来場者は「予約済み」の間ならいつでも整理券ページから取り消せます（当日でも可）。「前日まで」などの期限は案内文としてのルールです。当日の取消で空いた枠は、予約受付の締切前であれば、そのまま他の方が予約できる状態になります（23-3）。</div>
+
+	<h3>13-5. 同意事項</h3>
+	<figure class="wide"><img src="assets/admin-settings-05.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:40mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>同意事項の本文</th><td>申込み画面の最後にスクロール枠で表示し、確認メールにも載せる。既定は 9 項目（危険性の理解、指示の遵守、服装・装備、健康状態、事故時の対応、未成年者の参加、写真・動画、キャンセル・中止、個人情報）</td></tr>
+			<tr><th>同意チェックの文言</th><td>既定「上記すべてに同意します」。チェックしないと申し込めない</td></tr>
+			<tr><th>保護者同意チェックの文言</th><td>保護者の同意が必要な年齢未満のときだけ表示し、必須にする</td></tr>
+			<tr><th>写真掲載を希望しない場合のチェック文言</th><td>任意のチェック。チェックした予約は名簿・ダッシュボードで「写真掲載NG」と表示。空欄にするとチェック欄を出さない</td></tr>
+		</tbody>
+	</table>
+	<p>同意事項の本文と、支払い方法・キャンセル・注意事項・会場の案内文、中止のお知らせの本文では、次の差し込みが使えます（一覧は付録 A-3）: <code>{max_weight}</code>（参加できる体重の上限）、<code>{min_age}</code>（最低年齢）、<code>{minor_age}</code>（保護者同意が必要な年齢）、<code>{fee}</code>（馬の種類ごとの支払額をまとめたもの）、<code>{event}</code>（イベント名）。</p>
+	<div class="warn"><b class="t">文面の確認</b>第 5 項（事故時の対応）は、消費者契約法で無効になりうる「一切責任を負わない」という書き方を避けています。運用前に、主催団体の規程や加入保険（スポーツ安全保険など）の補償範囲と照らし合わせて確認してください。第 4 項の <code>{max_weight}</code> は、体重の上限のない馬の種類があると空になるので、その場合は文面も直してください。</div>
+
+	<h3>13-6. その他の案内文</h3>
+	<figure class="wide"><img src="assets/admin-settings-06.png" alt="" /></figure>
+	<table>
+		<tbody>
+			<tr><th>注意事項（服装・持ち物など）</th><td>予約ページの 1 ステップ目と整理券、確認メールに表示</td></tr>
+			<tr><th>会場案内</th><td>整理券と確認メールに表示（場所、受付テントの位置など）。空欄なら表示しない</td></tr>
+		</tbody>
+	</table>
+
+	<h3>13-7. メール送信</h3>
+	<figure class="wide"><img src="assets/admin-settings-07.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:36mm;">項目</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>送信者名・送信元メールアドレス</th><td>空欄なら WordPress の既定（wordpress@ドメイン）。サイトと同じドメインのアドレスを推奨。EquiTicket が送るすべてのメールに使う</td></tr>
+			<tr><th>件名</th><td>確認メールの件名。既定「【{event}】体験乗馬 整理券のご案内（{date} {start}〜）」。差し込み: <code>{event}</code> <code>{date}</code>（例: 9月23日(水)） <code>{start}</code> <code>{end}</code> <code>{name}</code>。空欄で保存すると既定に戻る</td></tr>
+			<tr><th>メール末尾の署名</th><td>本文の最後に付ける文（団体名、問い合わせ先など）。確認メール・中止のお知らせ・一斉メールに付く</td></tr>
+			<tr><th>中止のお知らせの件名</th><td>時間枠を「中止」にしたときに予約者へ送るメール（10-3）の件名。既定「【中止のお知らせ】{event}（{date} {start}〜）」。差し込みは確認メールの件名と同じ。空欄で保存すると既定に戻る</td></tr>
+			<tr><th>中止のお知らせの本文</th><td>「○○ 様」のあとに入る文。既定はお詫びの 2 行。このあとに中止になった枠の日時・乗る馬・人数・受付番号と署名が自動で入る</td></tr>
+		</tbody>
+	</table>
+
+	<h3>13-8. 個人情報の取り扱い</h3>
+	<figure class="wide"><img src="assets/admin-settings-08.png" alt="" /></figure>
+	<table>
+		<tbody>
+			<tr><th>プラグイン削除時</th><td>「プラグインを削除したときに、予約データと時間枠も完全に削除する」。チェックすると、プラグインを削除したときにテーブルと設定も消す（既定はオフ＝残す）</td></tr>
+		</tbody>
+	</table>
+	<p>以前の版にあった「保管期間の目安」と、運用ツールの「個人情報の削除」はなくなりました。予約の記録は、来年の参考にできるよう「過去の記録」に残ります。不要になった記録は「データの削除（リセット）」で日付を指定して消します（25-4）。</p>
+
+	<h3>13-9. スタッフ用アカウント</h3>
+	<p>5 章を参照してください。一覧はサイト管理者・運営スタッフに表示され、作成フォームはサイト管理者にだけ表示されます。</p>
+
+	<h3>13-10. 運用ツール</h3>
+	<figure class="wide"><img src="assets/admin-settings-10.png" alt="" /></figure>
+	<table>
+		<thead><tr><th style="width:32mm;">ツール</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>テストメールの送信</th><td>入力した宛先に確認用のメールを送る（既定は自分のアドレス）。届けば確認メールも同じ経路で届く</td></tr>
+			<tr><th>データの削除（リセット）</th><td>「予約データだけを削除する（時間枠は残す）」または「時間枠もまとめて削除する（初期化）」を選び、対象の日付（空欄ですべて）を指定する。実行には確認欄に「削除」または「初期化」と入力する必要がある。元に戻せない。リハーサルのあとに本番データへ入れ替えるときや、不要になった記録を消すときに使う</td></tr>
+		</tbody>
+	</table>
+	<div class="warn"><b class="t">削除の前に</b>削除系のツールは元に戻せません。先に「名簿印刷」から CSV を保存してください。サーバーのバックアップ機能があれば、そちらも確認しておくと安心です。馬の種類と設定は、どちらを選んでも消えません。</div>
+</div>
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 4 部</div>
+	<h1 class="part__title">来場者側の画面</h1>
+	<p class="part__desc">来場者が予約ページで見る画面、整理券、確認メールの内容です。問い合わせに答えるときの参照用です。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">14</span>予約の流れ</h2>
+	<p class="lead">予約は 4 ステップで、画面上部のステップ表示で現在位置が分かります。入力した値はステップ間で引き継がれ、最後の送信時にサーバー側で体格の判定と定員の確認をやり直します。</p>
+
+	<h3>14-1. ステップ 1: 体格の入力</h3>
+	<div class="row">
+		<figure class="phone"><img src="assets/front-step1.png" alt="" /></figure>
+		<div>
+			<p>乗る方の身長（cm）・体重（kg）・年齢を入力して <span class="kbd">空き状況を見る</span> を押します。入力欄の下に、参加条件（例:「対象は 5 歳以上、体重 80kg までの方です。体格と日程に合わせて、乗れる馬をご案内します。」）が表示されます。</p>
+			<p>画面の下には、注意事項と「空き状況（目安）」として、今日以降の時間枠ごとに、馬の種類ごとの残り人数（満席・中止の枠はそのように）が表示されます。</p>
+			<p>入力欄の上には「身長・体重・年齢は、乗る馬を選ぶためと、今後の運営の参考のために使います。」と表示されます。</p>
+		</div>
+	</div>
+	<div class="row">
+		<figure class="phone"><img src="assets/front-step1-error.png" alt="" /><figcaption>条件に合わない場合（体重の上限を超えた例）。入力値は残ったまま、理由が表示される。</figcaption></figure>
+		<div>
+			<h4>ステップ 1 で表示されるメッセージ</h4>
+			<table>
+				<tbody>
+					<tr><td>身長・体重・年齢を数字で入力してください。</td></tr>
+					<tr><td>身長は 50〜250cm の範囲で入力してください。</td></tr>
+					<tr><td>体重は 5〜200kg の範囲で入力してください。</td></tr>
+					<tr><td>年齢は 0〜120 の範囲で入力してください。</td></tr>
+					<tr><td>安全のため、5 歳以上の方を対象としています。</td></tr>
+					<tr><td>馬の負担を考え、体重 80kg までの方を対象としています。</td></tr>
+					<tr><td>入力いただいた体格に合う馬をご用意できませんでした。当日、会場のスタッフにご相談ください。</td></tr>
+				</tbody>
+			</table>
+			<p>数値は設定によって変わります。最後のメッセージは、どの馬の種類の条件にも当てはまらない場合です（9-3）。</p>
+		</div>
+	</div>
+
+	<h3>14-2. ステップ 2: 時間枠と馬の選択</h3>
+	<div class="row">
+		<figure class="phone"><img src="assets/front-step2.png" alt="" /><figcaption>ステップ 2 の上部。判定の結果と、乗れる馬の説明が出る。その下に日付ごとの時間枠が並ぶ。</figcaption></figure>
+		<div>
+			<p>画面の上に判定の結果（例:「体格に合わせて、ポニーでご案内します。」「ポニーと馬のどちらでもご案内できます。乗りたい馬をお選びください。」）と、乗れる馬ごとの説明・対象（乗れる条件）・当日のお支払いが表示されます。「1 人あたりの体験時間」を設定していれば「体験時間の目安」も出ます。</p>
+			<p>その下に、今日以降の時間枠が日付ごとに並びます。各枠には、その方が乗れる馬のうち、その枠に出している馬ごとに 1 行ずつ、名前・支払額・「残り N 名」と <span class="kbd">予約する</span> が表示されます。乗りたい時間と馬の <span class="kbd">予約する</span> を押すとステップ 3 に進みます。乗れる馬を 1 頭も出していない枠は表示されません。</p>
+			<p>一覧は 30 秒ごとに残り人数を読み込み直し、受け付けられなくなった行のボタンは押せなくなります。</p>
+		</div>
+	</div>
+	<table>
+		<thead><tr><th>行に表示されるもの</th><th>状況</th></tr></thead>
+		<tbody>
+			<tr><td>残り N 名</td><td>予約できる</td></tr>
+			<tr><td>満員</td><td>枠全体の定員、またはその馬の定員が埋まった（もう一方の馬は空いている場合がある）</td></tr>
+			<tr><td>この時間枠の受付は終了しました。</td><td>終了時刻（または予約受付の締切）を過ぎた</td></tr>
+			<tr><td>この時間枠は受付を停止しています。</td><td>状態が「受付停止」</td></tr>
+			<tr><td>この時間枠は中止になりました。</td><td>状態が「中止」</td></tr>
+		</tbody>
+	</table>
+	<p>予約できる枠が 1 つもない場合は、「申し訳ありません。現在、ご案内できる枠が空いていません。当日の空き状況は会場でもご案内しています。」と表示されます。時間枠が 1 つもなければ「現在、受付中の時間枠はありません。」です。</p>
+
+	<h3>14-3. ステップ 3: 申込み・同意</h3>
+	<div class="row">
+		<figure class="phone"><img src="assets/front-step3.png" alt="" /><figcaption>選んだ日時・乗る馬・人数・当日のお支払いの確認と、名前・メールアドレスの入力。</figcaption></figure>
+		<figure class="phone"><img src="assets/front-step3-consent.png" alt="" /><figcaption>支払い・キャンセルの案内と同意事項。</figcaption></figure>
+	</div>
+	<ul>
+		<li>お名前（50 文字以内）とメールアドレスは必須です。</li>
+		<li>当日の支払額は、選んだ馬の種類の金額が表示されます（来場者が選ぶ欄はありません）。金額が登録されていない馬では表示されません。</li>
+		<li>同意事項はスクロールできる枠に表示され、「上記すべてに同意します」のチェックが必須です。</li>
+		<li>保護者同意のチェックは、保護者の同意が必要な年齢未満の場合だけ表示され、必須です。</li>
+		<li>「写真・動画の掲載を希望しません」は任意です。</li>
+	</ul>
+	<h4>送信時に表示されるメッセージ</h4>
+	<table>
+		<thead><tr><th>メッセージ</th><th>原因</th></tr></thead>
+		<tbody>
+			<tr><td>申し訳ありません。ちょうど満席になりました。別の時間枠をお選びください。</td><td>入力中に他の方が予約して定員が埋まった</td></tr>
+			<tr><td>申し訳ありません。この時間枠の ポニー はちょうどいっぱいになりました。…</td><td>同上（その馬の定員）</td></tr>
+			<tr><td>このメールアドレスでは、同じ時間枠の予約がすでに登録されています。…</td><td>「同一メールの重複予約」を許可していない場合に、同じ枠に同じアドレスで申し込んだ（13-1）</td></tr>
+			<tr><td>同意事項への同意にチェックしてください。</td><td>同意のチェックがない</td></tr>
+			<tr><td>18 歳未満の方は、保護者の同意の確認にチェックしてください。</td><td>保護者同意のチェックがない</td></tr>
+			<tr><td>メールアドレスを正しく入力してください。</td><td>メールアドレスの形式が正しくない</td></tr>
+			<tr><td>送信内容を確認できませんでした。お手数ですが、もう一度お試しください。</td><td>ページを長時間開いたままにした、またはページがキャッシュされている（4-2）</td></tr>
+			<tr><td>短時間に多くの予約操作が行われました。数分おいてからもう一度お試しください。</td><td>同じ接続元から 10 分間に 30 件を超える予約があった（23-5）</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">15</span>整理券ページ</h2>
+	<div class="row">
+		<figure class="phone"><img src="assets/front-ticket.png" alt="" /><figcaption>予約直後の整理券ページ。</figcaption></figure>
+		<figure class="phone"><img src="assets/front-ticket-bottom.png" alt="" /><figcaption>ページ下部。支払い・キャンセルの案内と、取消ボタン。</figcaption></figure>
+	</div>
+	<p>予約が完了すると整理券ページに移動し、同じ URL が確認メールでも届きます。URL を知っている人なら誰でも開けるため、来場者には他人に見せないよう案内してください。</p>
+	<table>
+		<thead><tr><th style="width:34mm;">表示</th><th>内容</th></tr></thead>
+		<tbody>
+			<tr><th>受付済みの表示</th><td>「来場済み」になると、ページの一番上に大きく「✓ 受付済み」「HH:MM に受付しました」「係員の案内に従ってお進みください。」と表示される。「予約済み」の間はページが 5 秒ごとに状態を確認し、受付で QR を読み取ると数秒で自動的にこの表示に切り替わる</td></tr>
+			<tr><th>状態</th><td>予約済み／自己キャンセル／無断キャンセル（来場済みのときは上の表示に代わる）</td></tr>
+			<tr><th>明細</th><td>受付番号、日時、お名前、乗る馬、人数、当日のお支払い</td></tr>
+			<tr><th>QR コード</th><td>「予約済み」のときだけ表示。中身は整理券の URL そのもの。画像ではなくページに直接描くので、アプリ内のブラウザーでも表示される</td></tr>
+			<tr><th>LINE で開いたときの案内</th><td>LINE のアプリ内で開いた場合、「QR コードが表示されない場合や、あとで見返すときは、Safari・Chrome などのブラウザで開いてください。」と <span class="kbd">ブラウザで開く</span> が出る</td></tr>
+			<tr><th>整理券の URL</th><td>「予約済み」のときだけ表示。QR が読めないときの手動照合用</td></tr>
+			<tr><th>予約を取り消す</th><td>「予約済み」のときだけ表示。押すと確認ダイアログのあと自己キャンセルになり、枠が空く</td></tr>
+			<tr><th>案内</th><td>支払い・キャンセル、注意事項、会場（設定した場合）</td></tr>
+			<tr><th>別の方の分を申し込む</th><td>予約ページの最初に戻る</td></tr>
+		</tbody>
+	</table>
+	<p>予約ページが未設定の場合は、サイトのトップ URL に整理券を簡易表示します（3-1）。削除した予約の URL は「整理券が見つかりませんでした。URL をご確認ください。」となります（24-3）。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">16</span>確認メール</h2>
+	<div class="row">
+		<figure style="flex:0 0 86mm;"><img src="assets/mail.png" alt="" style="width:86mm;height:218mm;object-fit:cover;object-position:top;" /><figcaption>確認メールの HTML 版（同意事項の途中まで）。</figcaption></figure>
+		<div>
+			<h4>送られるタイミング</h4>
+			<ul>
+				<li>来場者の予約が確定した直後に 1 通</li>
+				<li>ダッシュボードの <span class="kbd">メール再送</span> を押したとき</li>
+			</ul>
+			<h4>内容</h4>
+			<p>宛名、受付番号・日時・乗る馬・人数・当日のお支払い、整理券の URL（開くと整理券の QR コードが表示される）、スクリーンショット保存のお願い、支払い方法、会場、注意事項、キャンセル・中止について、同意いただいた事項、署名。</p>
+			<p>メールには QR コードの画像を載せず、添付もしません。来場者には、URL を開いて整理券の画面を受付で見せてもらいます。当日予約ではメールアドレスを記録しないので、確認メールは送られません。</p>
+			<p>HTML 版とテキスト版を同時に送るので、HTML を表示しないメールソフトでも URL から整理券を開けます。</p>
+			<h4>送信状況</h4>
+			<p>送信に成功すると送信日時が記録され、ダッシュボードのメール欄が「送信済み」になります。失敗すると「未送信」のままになり、来場者には整理券ページで「整理券を発行しました。ただし確認メールの送信に失敗しました。この画面のスクリーンショットを保存してください。」と表示されます。</p>
+			<h4>そのほかのメール</h4>
+			<ul>
+				<li>中止のお知らせ: 時間枠を「中止」にしたとき（10-3）</li>
+				<li>一斉メール: 「一斉メール」画面から送ったとき（12 章）</li>
+				<li>テストメール: 設定の運用ツールから送ったとき（13-10）</li>
+			</ul>
+			<p>どれもテキスト形式で、送信者名・送信元アドレスは「メール送信」の設定（13-7）を使います。</p>
+		</div>
+	</div>
+</div>
+
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 5 部</div>
+	<h1 class="part__title">WordPress 本体とサーバー</h1>
+	<p class="part__desc">EquiTicket の動作に関わる WordPress 標準の管理画面と、サーバーパネル（エックスサーバー）の設定です。サイト管理者向けです。画面名は WordPress 6.x の日本語版に合わせています。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">17</span>WordPress の設定画面</h2>
+	<p class="lead">左メニュー <span class="kbd">設定</span> の中で、EquiTicket に影響する項目だけを挙げます。ここに載っていない項目（投稿設定・メディア設定など）は EquiTicket には関係しません。</p>
+
+	<h3>17-1. 一般設定<span class="h-path"><span class="kbd">設定</span> → <span class="kbd">一般</span></span></h3>
+	<table>
+		<thead><tr><th style="width:38mm;">項目</th><th>EquiTicket との関係</th><th style="width:40mm;">推奨</th></tr></thead>
+		<tbody>
+			<tr><th>サイトのタイトル</th><td>テストメールの本文に入る。確認メールの差出人名には使われない（差出人名は EquiTicket の「メール送信」で設定）</td><td>団体の名前など</td></tr>
+			<tr><th>WordPress アドレス (URL)<br />サイトアドレス (URL)</th><td>整理券の URL（QR の中身）はこのアドレスから作られる。http のままだとスマホのカメラが使えない。予約受付を始めたあとに変えると、送信済みのメール・QR の URL が古いアドレスのままになる</td><td><code>https://</code> で始まること。受付開始後は変更しない</td></tr>
+			<tr><th>管理者メールアドレス</th><td>WordPress 本体の通知（プラグインで致命的なエラーが起きたときの「リカバリーモード」のリンクなど）の送り先。EquiTicket のメールとは無関係</td><td>当日も確認できるアドレス</td></tr>
+			<tr><th>メンバーシップ</th><td>「だれでもユーザー登録ができるようにする」をオンにすると、誰でもアカウントを作れる</td><td class="ok">オフ</td></tr>
+			<tr><th>新規ユーザーのデフォルト権限グループ</th><td>自己登録や新規追加時の初期値。ここを「体験乗馬 受付スタッフ」にすると、登録しただけの人が名簿を見られる</td><td>購読者</td></tr>
+			<tr><th>サイトの言語</th><td>WordPress 本体の画面の言語。EquiTicket の画面は常に日本語</td><td>日本語</td></tr>
+			<tr><th>タイムゾーン</th><td><b>最重要</b>。時間枠の開始時刻、予約受付の締切、無断キャンセルの判定、「今日」の判定、受付時刻の記録がすべてこのタイムゾーンで行われる。UTC のままだと 9 時間ずれ、開始前の予約が無断キャンセルになる</td><td>「東京」または「UTC+9」</td></tr>
+			<tr><th>日付形式・時刻形式・週の始まり</th><td>EquiTicket は独自の書式（例: 9月27日(日) 10:00）で表示するため影響なし</td><td>任意</td></tr>
+		</tbody>
+	</table>
+	<div class="warn"><b class="t">タイムゾーンの確認方法</b>一般設定の「タイムゾーン」の下に表示される「現地時間は…」が、今の日本時間と一致しているか確認します。EquiTicket の当日ダッシュボードで今日の日付が開くことでも確認できます。</div>
+
+	<h3>17-2. 表示設定<span class="h-path"><span class="kbd">設定</span> → <span class="kbd">表示設定</span></span></h3>
+	<table>
+		<tbody>
+			<tr><th style="width:38mm;">ホームページの表示</th><td>イベント期間中だけ予約ページをサイトのトップにしたい場合は「固定ページ」→「ホームページ」に予約ページを選ぶ。整理券の URL はトップの URL＋<code>?et_token=…</code> になり、そのまま機能する。終了後に戻すと、送信済みの整理券 URL はトップページに簡易表示される（3-1）</td></tr>
+			<tr><th>検索エンジンでの表示</th><td>「検索エンジンがサイトをインデックスしないようにする」はサイト全体に効くため、通常はオフのまま。整理券の URL には EquiTicket が自動で検索除外（noindex）を付ける</td></tr>
+		</tbody>
+	</table>
+
+	<h3>17-3. パーマリンク設定<span class="h-path"><span class="kbd">設定</span> → <span class="kbd">パーマリンク</span></span></h3>
+	<p>どの構造でも動作します。整理券の URL は予約ページの URL に <code>?et_token=</code> を足したもので、構造によって次のようになります。</p>
+	<table>
+		<thead><tr><th style="width:38mm;">パーマリンク構造</th><th>整理券の URL の例</th></tr></thead>
+		<tbody>
+			<tr><th>基本</th><td><code>https://example.jp/?page_id=12&amp;et_token=…</code></td></tr>
+			<tr><th>投稿名など</th><td><code>https://example.jp/taiken/?et_token=…</code></td></tr>
+		</tbody>
+	</table>
+	<p>構造や予約ページのスラッグを受付開始後に変えると、送信済みのメールの URL が新しい URL と一致しなくなります。WordPress が転送してくれる場合もありますが保証されないため、<b>受付を始める前に確定</b>させてください。万一変えてしまった場合でも、受付では「氏名で探す」で照合できます。</p>
+
+	<h3>17-4. プライバシー</h3>
+	<p><span class="kbd">設定</span> → <span class="kbd">プライバシー</span> でプライバシーポリシーのページを指定できます。EquiTicket で扱う情報を、サイトのプライバシーポリシーにも記載してください。記載例:</p>
+	<pre>体験乗馬の予約では、お名前、メールアドレス、身長・体重・年齢、保護者の同意の有無、写真掲載の可否をお預かりします。
+これらは、乗る馬の決定、当日の受付、緊急時の対応、予約に関するご連絡、今後の運営の参考のためにのみ使用します。</pre>
+	<p>保管する期間と削除の時期は主催者で決め、ポリシーにも書いてください。EquiTicket には氏名やメールアドレスだけを消す機能はないので、削除するときは「データの削除（リセット）」で日付を指定して予約データを消します（25-4）。</p>
+	<div class="note"><b class="t">WordPress 標準の個人データツールは対象外</b><span class="kbd">ツール</span> → <span class="kbd">個人データのエクスポート</span>／<span class="kbd">個人データの消去</span> は、EquiTicket の予約データを対象にしません。来場者から削除の依頼があった場合は、当日ダッシュボード（または過去の記録）の検索で該当の予約を探し、運営スタッフ以上のアカウントで <span class="kbd">削除</span> します（6-4）。</div>
+
+	<h3>17-5. ディスカッション</h3>
+	<p>予約ページにコメント欄が出る場合は、固定ページの編集画面の右側 <span class="kbd">ディスカッション</span> で「コメントを許可」をオフにします。サイト全体の <span class="kbd">設定</span> → <span class="kbd">ディスカッション</span> を変える必要はありません。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">18</span>ユーザー</h2>
+	<p class="lead">左メニュー <span class="kbd">ユーザー</span> の画面です。スタッフ用アカウントは EquiTicket の設定画面から作れますが（5 章）、変更・削除・ログアウトはこちらで行います。</p>
+
+	<h3>18-1. ユーザー一覧</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:38mm;">権限グループで絞り込み</th><td>一覧の上の「すべて (n) ｜ 管理者 (n) ｜ 体験乗馬 受付スタッフ (n) …」を押すと、そのロールのユーザーだけを表示する。スタッフ用アカウントの棚卸しに使う</td></tr>
+			<tr><th>行の操作</th><td>名前にマウスを乗せると <span class="kbd">編集</span> <span class="kbd">削除</span> <span class="kbd">パスワードリセットを送信</span> が出る。「パスワードリセットを送信」は、そのユーザーのメールアドレスに再設定リンクを送る</td></tr>
+			<tr><th>一括操作</th><td>チェックを入れて「権限グループを変更…」でロールを選び <span class="kbd">変更</span>。イベント後に受付スタッフを「権限なし」や購読者に落とすときに使う</td></tr>
+		</tbody>
+	</table>
+
+	<h3>18-2. 新規ユーザーを追加</h3>
+	<p><span class="kbd">ユーザー</span> → <span class="kbd">新規ユーザーを追加</span>。EquiTicket の作成フォーム（5-2）と同じ結果になりますが、こちらは姓・名などの項目があり、「新規ユーザーに通知を送信」にチェックすると、本人にパスワード設定用のリンクが届きます。<b>権限グループ</b>で「体験乗馬 受付スタッフ」または「体験乗馬 運営スタッフ」を選んでください。</p>
+
+	<h3>18-3. ユーザーの編集</h3>
+	<p>一覧から <span class="kbd">編集</span> を開くと、次の項目を変更できます。</p>
+	<table>
+		<thead><tr><th style="width:38mm;">項目</th><th>EquiTicket での使い方</th></tr></thead>
+		<tbody>
+			<tr><th>権限グループ</th><td>ロールの付け替え。既存のスタッフのアカウント（編集者など）を受付スタッフにすると、その人は EquiTicket 以外の画面を使えなくなる点に注意。編集者のままでも受付の権限は付いている（1-2）</td></tr>
+			<tr><th>管理画面の配色</th><td>ユーザーごとの見た目。受付端末で見やすい配色にしてよい</td></tr>
+			<tr><th>ツールバー</th><td>「サイトを見るときにツールバーを表示する」。EquiTicket 専用ロールのユーザーは、この設定に関係なく非表示になる</td></tr>
+			<tr><th>メールアドレス</th><td>パスワード再設定の送り先。共有アカウントは団体の代表アドレスにする</td></tr>
+			<tr><th>新しいパスワード</th><td><span class="kbd">新しいパスワードを設定</span> で生成・入力して <span class="kbd">ユーザーを更新</span></td></tr>
+			<tr><th>セッション</th><td><span class="kbd">すべての場所からログアウト</span> で、そのアカウントでログイン中のすべての端末をログアウトさせる。受付端末を紛失したときはこれとパスワード変更を行う</td></tr>
+			<tr><th>アプリケーションパスワード</th><td>外部アプリ連携用。EquiTicket では使わないので作らない</td></tr>
+		</tbody>
+	</table>
+	<div class="warn"><b class="t">共有アカウントのプロフィール</b>受付スタッフ・運営スタッフも自分の <span class="kbd">プロフィール</span> を開けるため、共有アカウントのパスワードやメールアドレスを誰でも変更できてしまいます。「共有アカウントのプロフィールは変更しない」ことを部内で決めておいてください。</div>
+
+	<h3>18-4. ユーザーの削除</h3>
+	<p>投稿を持つユーザーを削除するときは、そのコンテンツをどうするか聞かれます。スタッフ用アカウントは通常投稿を持たないので、確認なしで削除されます。予約データはユーザーに結び付いていない（誰が受付したかは記録しない）ため、スタッフ用アカウントを削除しても予約・受付の記録は残ります。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">19</span>固定ページ・プラグイン・ツール</h2>
+
+	<h3>19-1. 固定ページ（予約ページ）</h3>
+	<p><span class="kbd">固定ページ</span> → <span class="kbd">固定ページ一覧</span> で予約ページを開くと、ブロックエディターの右側「ページ」タブで次を設定できます。</p>
+	<table>
+		<thead><tr><th style="width:30mm;">項目</th><th>設定と影響</th></tr></thead>
+		<tbody>
+			<tr><th>ステータス</th><td><b>公開</b>にする。「非公開」「下書き」「ゴミ箱」にすると来場者は開けず、EquiTicket の画面の上部に「来場者が予約するためのページがまだありません。」と出る。その間、整理券の URL はサイトのトップに簡易表示される。「パスワード保護」は来場者がパスワードを入れれば使えるが、手間が増えるので勧めない</td></tr>
+			<tr><th>リンク（スラッグ）</th><td>予約ページの URL。受付開始後は変えない（17-3）</td></tr>
+			<tr><th>テンプレート</th><td>テーマによっては「1 カラム」「全幅」などを選べる。サイドバーがないほうがスマホ・PC ともに入力欄が広くなる</td></tr>
+			<tr><th>ディスカッション</th><td>コメントはオフ</td></tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>ショートコードは「ショートコード」ブロックのほか、段落ブロックやクラシックエディターの本文に直接書いても動作します。</li>
+		<li>ページビルダー（Elementor など）を使っている場合は、そのビルダーの「ショートコード」ウィジェットに <code>[equiticket_reservation]</code> を入れます。</li>
+		<li>1 つのページにショートコードは 1 回だけ置いてください。</li>
+		<li>EquiTicket を無効化すると、ページには <code>[equiticket_reservation]</code> という文字がそのまま表示されます。</li>
+	</ul>
+
+	<h3>19-2. サイトのメニューに載せる</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:38mm;">クラシックテーマ</th><td><span class="kbd">外観</span> → <span class="kbd">メニュー</span> で、左の「固定ページ」から予約ページを追加して <span class="kbd">メニューを保存</span></td></tr>
+			<tr><th>ブロックテーマ</th><td><span class="kbd">外観</span> → <span class="kbd">エディター</span> → <span class="kbd">ナビゲーション</span> で予約ページのリンクを追加して保存</td></tr>
+		</tbody>
+	</table>
+
+	<h3>19-3. プラグイン</h3>
+	<table>
+		<thead><tr><th style="width:30mm;">操作</th><th>影響</th></tr></thead>
+		<tbody>
+			<tr><th>更新</th><td>新しい ZIP を <span class="kbd">プラグインのアップロード</span> から入れ、「現在のものをアップロードしたもので置き換える」を押す。予約データと設定は残る（2-4）。EquiTicket は WordPress.org で配布していないため、自動更新は届かない</td></tr>
+			<tr><th>無効化</th><td>予約・受付が止まる。データと設定は残り、再度有効化すれば元に戻る。定期処理も止まる</td></tr>
+			<tr><th>削除</th><td>「プラグイン削除時」の設定（13-8）がオフなら、データと設定は残る</td></tr>
+		</tbody>
+	</table>
+	<h4>ほかのプラグインとの組み合わせ</h4>
+	<table>
+		<thead><tr><th style="width:38mm;">種類</th><th>注意点</th></tr></thead>
+		<tbody>
+			<tr><th>キャッシュ・高速化</th><td>予約ページを除外。JavaScript の結合・遅延読み込みから <code>/wp-content/plugins/equiticket/</code> を除外（4-2）</td></tr>
+			<tr><th>セキュリティ（SiteGuard WP Plugin など）</th><td>ログイン URL を変更している場合は、その URL をスタッフに伝える。管理画面へのアクセス制限を使う場合、<code>admin-ajax.php</code>（来場者の残り人数の自動更新に使う）と <code>admin-post.php</code>（受付・予約操作の送信先）を止めないようにする。ログイン画面の画像認証は共有アカウントでも問題ない</td></tr>
+			<tr><th>SMTP 送信</th><td>メールが届きにくい場合に使う（4-3、20-6）。EquiTicket のメールも自動的にこの経路で送られる</td></tr>
+			<tr><th>ロール編集（User Role Editor など）</th><td>ほかのロールに EquiTicket の権限（付録 C）を付けられる。EquiTicket 専用ロールの権限を減らすと画面が開けなくなる</td></tr>
+		</tbody>
+	</table>
+
+	<h3>19-4. ツール</h3>
+	<table>
+		<thead><tr><th style="width:38mm;">画面</th><th>EquiTicket との関係</th></tr></thead>
+		<tbody>
+			<tr><th>サイトヘルス → ステータス</th><td>予定されたイベント（WP-Cron）の遅延やループバックリクエストに関する警告が出ていれば、定期処理が遅れている（4-4、20-7）。「HTTPS を使用していません」が出ていれば 17-1 を確認</td></tr>
+			<tr><th>サイトヘルス → 情報</th><td>「サーバー」で PHP のバージョン、「データベース」で MySQL / MariaDB のバージョン、「WordPress 定数」で <code>DISABLE_WP_CRON</code> の値を確認できる。不具合を相談するときはこの画面の「サイト情報をクリップボードにコピー」を添える</td></tr>
+			<tr><th>エクスポート</th><td>WordPress の投稿・固定ページの書き出し。EquiTicket の時間枠・予約は<b>含まれない</b>。予約の記録は名簿印刷の CSV で残す</td></tr>
+			<tr><th>個人データのエクスポート・消去</th><td>EquiTicket のデータは対象外（17-4）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>19-5. 更新のタイミング</h3>
+	<p>WordPress 本体・テーマ・プラグインの更新中は、数秒〜数十秒「現在メンテナンス中のため、しばらくの間ご利用いただけません。」と表示され、予約も受付もできません。更新による不具合の可能性もあるため、<b>イベントの前日から当日</b>は手動の更新を控え、更新は 1 週間以上前に済ませて動作確認してください。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">20</span>サーバーパネル（エックスサーバー）</h2>
+	<p class="lead">エックスサーバーの「サーバーパネル」で確認・設定する項目です。メニューの名称はサーバーパネルの改訂で変わることがあります。ほかのサーバーでも同等の機能を探してください。</p>
+
+	<h3>20-1. SSL</h3>
+	<p><span class="kbd">SSL設定</span> でドメインに無料独自 SSL を追加します（反映まで最大 1 時間程度）。反映後、WordPress の一般設定の 2 つの URL を <code>https://</code> に変え（17-1）、http でアクセスされた場合に https へ転送する設定（<code>.htaccess</code> またはサーバーパネルの転送設定）を入れます。整理券の QR には https の URL が入るので、転送がなくても受付には影響しませんが、ポスターの QR から来る来場者のために入れておきます。</p>
+
+	<h3>20-2. PHP のバージョン</h3>
+	<p><span class="kbd">PHP Ver.切替</span> でドメインごとの PHP を選びます。EquiTicket は 7.2 以上で動作しますが、推奨版（8 系）を選んでください。切り替えたら、予約ページ・当日ダッシュボード・受付画面が開くか、テスト予約ができるかを確認します。</p>
+
+	<h3>20-3. キャッシュと高速化</h3>
+	<table>
+		<thead><tr><th style="width:38mm;">機能</th><th>影響と対応</th></tr></thead>
+		<tbody>
+			<tr><th>サーバーキャッシュ設定</th><td>ページの出力をサーバーで保存して配信する機能。予約ページが保存されると、フォームの有効期限切れ（「送信内容を確認できませんでした」）や古い残り人数の原因になる。予約受付の期間中はオフにするか、予約ページを対象外にできることを確認する</td></tr>
+			<tr><th>Xアクセラレータ</th><td>PHP の実行を速くする機能で、ページの内容は保存しない。オンのままでよい</td></tr>
+			<tr><th>ブラウザキャッシュ設定</th><td>画像・CSS・JavaScript をブラウザーに保存させる機能。EquiTicket はファイルにバージョン番号を付けて読み込むため、オンのままでよい。更新直後に表示が崩れたら、端末で再読み込みする</td></tr>
+		</tbody>
+	</table>
+	<div class="tip"><b class="t">キャッシュされていないかの確認</b>プライベートウィンドウで予約ページを 2 回開き、1 回目に空き状況の数字をメモ、別の端末でその枠を予約してから 2 回目を開きます（空き状況の自動更新を待たずに、ページの再読み込みで確認）。数字が減っていれば、ページはキャッシュされていません。</div>
+
+	<h3>20-4. WAF（Web アプリケーションファイアウォール）</h3>
+	<p><span class="kbd">WAF設定</span> がオンだと、設定画面の保存（特に同意事項・案内文などの長い文章）で「403 Forbidden」になることがあります。その場合は WAF の該当する対策（XSS 対策・SQL 対策など）を一時的にオフにして保存し、終わったら元に戻してください。反映には数分かかります。予約・受付の操作で 403 が出た場合も、同じ手順で切り分けます。</p>
+
+	<h3>20-5. アクセス制限</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:38mm;">国外 IP アクセス制限</th><td>オンにすると、海外の IP アドレスから管理画面・ログイン画面に入れなくなる。VPN を使っている端末や、海外経由の通信になるサービスを使う端末ではログインできないことがある。来場者の予約ページ自体は制限されない</td></tr>
+			<tr><th>ログイン試行回数制限</th><td>パスワードを一定回数間違えると、その IP アドレスからのログインが一時的に止まる。共有アカウントを会場の同じ Wi-Fi から複数人が間違えると、全員が締め出されることがある。パスワードは事前に端末に保存しておく</td></tr>
+		</tbody>
+	</table>
+
+	<h3>20-6. メール</h3>
+	<ol class="steps">
+		<li><span class="kbd">メールアカウント設定</span> で送信元にするアドレス（例: <code>info@example.jp</code>）を作ります。来場者からの返信もここに届きます。</li>
+		<li>EquiTicket の <span class="kbd">設定</span> → <span class="kbd">メール送信</span> の「送信元メールアドレス」にそのアドレスを入れます（13-7）。空欄のままだと WordPress の既定（<code>wordpress@ドメイン</code>、差出人名「WordPress」）で送られます。</li>
+		<li>送信ドメイン認証を確認します。SPF はエックスサーバーの DNS を使っていれば既定で設定済みです。<span class="kbd">DKIM設定</span> を有効にし、可能なら <span class="kbd">DNSレコード設定</span> で DMARC レコード（例: <code>v=DMARC1; p=none;</code>）を追加すると、Gmail などで迷惑メールに入りにくくなります。</li>
+		<li>運用ツールの <span class="kbd">テストメールの送信</span> で、Gmail・iCloud・キャリアメール（docomo / au / SoftBank）に届くか確認します。</li>
+	</ol>
+	<div class="note"><b class="t">キャリアメールの受信設定</b>来場者の端末で迷惑メール対策（ドメイン指定受信など）をしていると届きません。予約ページの案内文に「<code>@example.jp</code> からのメールを受信できるようにしてください」と書いておくと問い合わせが減ります。</div>
+
+	<h3>20-7. Cron（任意）</h3>
+	<p>WP-Cron はアクセスがあったときにしか動きませんが、EquiTicket は画面表示時にも自動解放を行うので、通常は設定不要です（4-4）。確実に 5 分ごとに動かしたい場合だけ、次の 2 つを行います。</p>
+	<ol class="steps">
+		<li><span class="kbd">Cron設定</span> で、5 分ごと（分: <code>*/5</code>、ほかは <code>*</code>）に次のコマンドを登録します。<pre>curl -s "https://example.jp/wp-cron.php?doing_wp_cron" &gt; /dev/null 2&gt;&amp;1</pre></li>
+		<li>アクセス時の WP-Cron を止める場合は、<code>wp-config.php</code> に <code>define( 'DISABLE_WP_CRON', true );</code> を追加します（1 を確認してから）。</li>
+	</ol>
+
+	<h3>20-8. バックアップ</h3>
+	<p>エックスサーバーは Web とデータベースを自動でバックアップしており、<span class="kbd">バックアップ</span> から過去の時点に復元できます（保存期間はプランの仕様を確認）。ただし復元は<b>その時点以降の予約がすべて消える</b>ため、当日の誤操作の取り消しには使わず、画面上の操作（24 章）で戻してください。</p>
+	<p>データの削除（リセット）を行う前や、イベント終了後の記録として残したい場合は、名簿の CSV に加えて、<span class="kbd">phpMyAdmin</span> で <code>wp_equiticket_time_slots</code> と <code>wp_equiticket_reservations</code> をエクスポートしておくと確実です（接頭辞はサイトによって異なる）。</p>
+
+	<h3>20-9. ログ</h3>
+	<p>画面が真っ白になる、「このサイトで重大なエラーが発生しました」と出る場合は、<span class="kbd">ログ</span> → <span class="kbd">エラーログ</span> で PHP のエラーを確認します。同時に、管理者メールアドレス（17-1）にリカバリーモードのリンクが届いていないか確認してください。</p>
+</div>
+
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">第 6 部</div>
+	<h1 class="part__title">運用とトラブル対応</h1>
+	<p class="part__desc">準備から当日、終了後までの進め方と、自動処理・数字の決まり方、予約の状態の移り変わり、よくあるトラブルへの対処をまとめます。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">21</span>当日の進め方</h2>
+
+	<h3>21-1. 準備のチェックリスト</h3>
+	<table>
+		<thead><tr><th class="c" style="width:8mm;">✓</th><th style="width:26mm;">時期</th><th>内容</th><th style="width:21mm;">参照</th></tr></thead>
+		<tbody>
+			<tr><td class="c">□</td><td>2 週間前まで</td><td>WordPress のタイムゾーン・https・パーマリンクを確認し、WordPress 本体・テーマ・プラグインの更新を済ませる</td><td>17、19-5</td></tr>
+			<tr><td class="c">□</td><td>2 週間前まで</td><td>馬の種類（乗れる条件・支払額）と、参加条件・同意事項・案内文を確定して設定する（同意事項は顧問・保険の内容と照らし合わせる）</td><td>9、13-3〜13-7</td></tr>
+			<tr><td class="c">□</td><td>2 週間前まで</td><td>送信元アドレスを設定し、テストメールが Gmail・iCloud・キャリアメールに届くことを確認する</td><td>13-7、20-6</td></tr>
+			<tr><td class="c">□</td><td>2 週間前まで</td><td>時間枠を作る（一括作成）。馬の種類ごとの頭数・定員・備考を確認する</td><td>10</td></tr>
+			<tr><td class="c">□</td><td>受付開始前</td><td>リハーサル: 自分のスマホで予約 → メール受信 → 受付画面で読み取り → ダッシュボードで確認 → 予約済みに戻す／取消。ポニーのみ・両方・馬のみの 3 通りの体格で試す</td><td>14、7</td></tr>
+			<tr><td class="c">□</td><td>受付開始前</td><td>リハーサルのデータを「予約データだけを削除する」で消す（数件ならダッシュボードの <span class="kbd">削除</span> でもよい）</td><td>13-10、6-4</td></tr>
+			<tr><td class="c">□</td><td>受付開始前</td><td>予約ページの URL の QR をポスター・SNS に載せる</td><td>3-2</td></tr>
+			<tr><td class="c">□</td><td>前日</td><td>スタッフ用アカウントで各受付端末にログインし、パスワードを端末に保存。受付画面をホーム画面に追加し、カメラの許可を済ませる</td><td>5、7-1</td></tr>
+			<tr><td class="c">□</td><td>前日</td><td>一斉メールで、予約済みの方に「来られなくなったら取り消してください」とお願いする</td><td>12</td></tr>
+			<tr><td class="c">□</td><td>前日</td><td>名簿を印刷する（通信障害時の控え）。前日夜の時点のものでよい</td><td>11</td></tr>
+			<tr><td class="c">□</td><td>前日</td><td>受付端末の充電・モバイルバッテリー、つり銭、ヘルメットの数を確認する</td><td>—</td></tr>
+		</tbody>
+	</table>
+
+	<h3>21-2. 開場前（30 分前）</h3>
+	<ol class="steps">
+		<li>当日ダッシュボードを開き、今日の日付が表示されていること、予約数が前日から大きくずれていないことを確認します。</li>
+		<li>馬の体調を見て、頭数・定員を変える枠があれば変更します（21-4）。</li>
+		<li>各受付端末で受付画面を開き、<span class="kbd">カメラで読み取る</span> → 自分の整理券（リハーサル用に 1 件残すか、ダッシュボードの <span class="kbd">整理券を表示</span> を別端末に表示）を読んで動作を確認します。確認に使った予約は <span class="kbd">予約済みに戻す</span> で戻します。</li>
+		<li>名簿の最新版が必要なら、この時点で印刷し直します。</li>
+	</ol>
+
+	<h3>21-3. 受付の手順</h3>
+	<ol class="steps">
+		<li>来場者に整理券（画面・スクリーンショット・メール）を出してもらい、受付画面で QR を読み取ります。</li>
+		<li>結果が <b>OK</b> なら、表示された名前・乗る馬・集金額を来場者に確認し、集金します。「予約時間は…です」と出た場合は、時間を確認して案内します（記録はされています）。</li>
+		<li>OK 以外の表示は 7-2 の表に従って対応します。判断に迷う場合は責任者に回し、列を止めないようにします。</li>
+		<li>予約のない方は、空きがあれば <span class="kbd">体験乗馬</span> → <span class="kbd">当日予約</span> で登録します（8 章）。</li>
+	</ol>
+	<div class="tip"><b class="t">役割分担の例</b>受付係（QR の読み取りと集金。1 端末 1 人）、当日予約係（「当日予約」を開いた端末で飛び込みの方の登録、ダッシュボードで遅刻の方の対応）、責任者（運営スタッフのアカウントで頭数・定員・枠の状態を変更）。受付係は受付スタッフのアカウントで足ります。</div>
+
+	<h3>21-4. 当日の枠の調整</h3>
+	<table>
+		<thead><tr><th style="width:36mm;">状況</th><th>操作</th><th>既存の予約への影響</th></tr></thead>
+		<tbody>
+			<tr><th>馬が 1 頭休む</th><td>その枠のその馬の頭数と定員を減らす（ダッシュボードの <span class="kbd">頭数・定員を変更</span>）</td><td>取り消されない。定員を予約人数より少なくすると残り 0 になり、新しい予約が止まるだけ。超過分の方への対応は現場で判断する</td></tr>
+			<tr><th>予約を一時的に止めたい</th><td>状態を「受付停止」にする</td><td>影響なし。受付（QR）と当日予約の登録はできる</td></tr>
+			<tr><th>空きを増やす</th><td>定員を増やす</td><td>保存した時点から来場者の画面の残り人数が増える（一覧は 30 秒以内に更新）</td></tr>
+			<tr><th>荒天でその枠を行わない</th><td>状態を「中止」にし、中止のお知らせのチェックを入れたまま更新する（10-3）</td><td>予約は自動では取り消されないが、メールアドレスのある予約済みの方には中止のお知らせメールが届く。メールのない予約（当日予約など）や、メールを見ていない方のために、SNS・掲示でも案内する（整理券ページに中止の表示はない）。中止の枠の予約は無断キャンセルにならず、「予約済み」のまま残る（23-1）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>21-5. 終了時</h3>
+	<ol class="steps">
+		<li>最後の枠の開始から「無断キャンセルの締切」を過ぎたら、ダッシュボードで <span class="kbd">未来場を解放（無断キャンセル処理）</span> を押し、時間ごと・馬ごとの未来場の表で、「中止」の枠を除いて未来場が 0 になったことを確認します（自動処理は当日の枠しか対象にしないため、当日中に行う）。</li>
+		<li>ダッシュボードの「来場済み分」と、手元の現金を突き合わせます（23-7）。</li>
+		<li>名簿印刷から CSV を書き出して保存します。</li>
+	</ol>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">22</span>障害時の対応</h2>
+
+	<h3>22-1. 会場の通信が不安定</h3>
+	<ul>
+		<li>受付端末は会場の Wi-Fi とモバイル回線を切り替えて試します。テザリング用の端末を 1 台用意しておくと安心です。</li>
+		<li>通信できない間は、<b>紙の名簿</b>で受付します。来場者の画面の整理券 URL の末尾 6 文字と、名簿の「トークン末尾」を見比べ、□ に印を付けます。</li>
+		<li>通信が戻ったら、印を付けた方を当日ダッシュボードの <span class="kbd">来場済みにする</span>、または受付画面の「氏名で探す」で記録します。受付時刻は記録した時刻になります。</li>
+	</ul>
+
+	<h3>22-2. 受付端末で QR が読めない</h3>
+	<p>次の順に切り替えます。どの方法でも記録される内容は同じです。</p>
+	<ol class="steps">
+		<li><span class="kbd">写真で読み取る</span>（7-3）。暗い・反射する場合は来場者の画面の明るさを上げてもらう。</li>
+		<li>別の受付端末で読む。</li>
+		<li>「氏名で探す」（7-4）で名前の一部を入れて探し、<span class="kbd">来場済みにする</span>。</li>
+		<li>来場者の画面の URL を「手動照合」に入力する（7-4）。</li>
+	</ol>
+	<p>カメラが起動しない原因の切り分けは 7-6「カメラの状態」を参照してください。</p>
+
+	<h3>22-3. サイトが表示されない</h3>
+	<table>
+		<thead><tr><th style="width:44mm;">表示</th><th>原因と対応</th></tr></thead>
+		<tbody>
+			<tr><th>現在メンテナンス中のため…</th><td>更新の途中。通常は 1 分以内に戻る。10 分以上続く場合は、サーバーの WordPress のフォルダにある <code>.maintenance</code> ファイルを削除する</td></tr>
+			<tr><th>このサイトで重大なエラーが発生しました</th><td>プラグイン・テーマの不具合。管理者メールアドレスに届くリカバリーモードのリンクからログインし、原因のプラグインを無効化する。エラーログも確認する（20-9）</td></tr>
+			<tr><th>503 / 500 エラー</th><td>サーバーの負荷・障害。エックスサーバーの障害情報を確認する。復旧まで紙の名簿で受付する</td></tr>
+			<tr><th>403 Forbidden</th><td>WAF・アクセス制限（20-4、20-5）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>22-4. 来場者に確認メールが届かない</h3>
+	<ol class="steps">
+		<li>迷惑メールフォルダを確認してもらいます。</li>
+		<li>当日ダッシュボードの検索欄（名前・メールアドレス・受付番号）でその予約を探し、メール欄のアドレスが正しいか、「送信済み」かを確認します。</li>
+		<li>アドレスが正しければ <span class="kbd">メール再送</span> を押します。</li>
+		<li>アドレスが間違っている場合、EquiTicket には予約のメールアドレスを変更する画面はありません。受付は氏名で照合できるので、そのまま来場してもらいます。整理券が必要な場合は、その予約を <span class="kbd">取消</span> し、正しいアドレスで予約し直してもらいます。</li>
+	</ol>
+
+	<h3>22-5. 誤操作をした</h3>
+	<table>
+		<thead><tr><th style="width:44mm;">誤操作</th><th>戻し方</th></tr></thead>
+		<tbody>
+			<tr><th>別の人を来場済みにした</th><td>ダッシュボードで <span class="kbd">予約済みに戻す</span>。受付時刻は消える</td></tr>
+			<tr><th>取消・無断キャンセルにした</th><td><span class="kbd">予約済みに戻す</span>。定員は確認されないので、その間に埋まっていると定員を超える</td></tr>
+			<tr><th>締切後の枠で予約済みに戻した</th><td>直後の自動処理で「無断キャンセル」に戻る（23-1）。来場している方なら <span class="kbd">来場済みにする</span> を使う</td></tr>
+			<tr><th>当日予約を間違えて登録した</th><td>「当日予約」画面の「今日の当日予約」で <span class="kbd">取消</span> し、登録し直す（8-3）</td></tr>
+			<tr><th>時間枠の頭数・定員を間違えた</th><td>時間枠を編集し直す。予約には影響しない</td></tr>
+			<tr><th>中止のお知らせを送らずに中止にした</th><td>あとからお知らせだけを送る機能はない。予約済みの方に個別に連絡する（10-3）</td></tr>
+			<tr><th>予約の削除・データの削除を実行した</th><td>画面からは戻せない。サーバーのバックアップから復元するしかなく、その時点以降のデータは失われる（20-8）</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">23</span>自動処理と数字の決まり方</h2>
+	<p class="lead">画面の数字や自動で起きる状態の変化が、どの規則で決まるかをまとめます。問い合わせや「数字が合わない」ときの確認に使ってください。</p>
+
+	<h3>23-1. 無断キャンセル（自動解放）</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:30mm;">対象</th><td><b>今日</b>の時間枠のうち、「開始時刻＋無断キャンセルの締切（既定 10 分）」を過ぎた枠の、<b>予約済み</b>の予約。受付中・受付停止の枠が対象で、<b>「中止」の枠は対象外</b>（来なくて当然なので、予約済みのまま残す）</td></tr>
+			<tr><th>処理</th><td>状態を「無断キャンセル」にし、その時刻を記録する。人数は残り人数に戻る</td></tr>
+			<tr><th>実行のきっかけ</th><td>(1) WP-Cron で 5 分ごと、(2) 予約ページ・空き状況の自動更新・当日ダッシュボード・過去の記録・当日予約の表示時（1 分に 1 回まで）、(3) ダッシュボードの <span class="kbd">未来場を解放（無断キャンセル処理）</span></td></tr>
+			<tr><th>メール</th><td>来場者には送られない</td></tr>
+		</tbody>
+	</table>
+	<p>例: 10:00〜10:20 の枠、締切 10 分なら、10:10 以降の最初の実行で、その枠の未来場の予約が無断キャンセルになります。</p>
+	<div class="note"><b class="t">解放された席の使われ方</b>来場者の Web 予約は枠の<b>終了時刻</b>（から予約受付の締切を引いた時刻）まで受け付けるため（23-3）、解放された席は、枠の途中でも Web から予約できます。会場で希望された方には、スタッフが「当日予約」（8 章）で入れます。受付・ダッシュボードの「時間切れ」「当日枠として解放」という表示はこの意味です。</div>
+	<div class="warn"><b class="t">遅れて来た方を受け付けると定員を超えることがある</b>「時間切れ」の整理券を <span class="kbd">それでも来場済みにする</span>（またはダッシュボードの <span class="kbd">来場済みにする</span>）で受け付けるとき、定員は確認されません。解放後に Web 予約や当日予約で席が埋まっていると、定員を超えて記録されます。受け付ける前にダッシュボードでその枠の残りを確認してください。</div>
+
+	<h3>23-2. 残り人数</h3>
+	<p>残り人数は保存された値ではなく、表示のたびに予約から計算します。数えるのは<b>予約済み</b>と<b>来場済み</b>の人数で、自己キャンセル・無断キャンセルは数えません。頭数は計算に使いません。</p>
+	<table>
+		<tbody>
+			<tr><th style="width:36mm;">合計定員</th><td>その枠に出す馬の種類ごとの定員の合計（自動）</td></tr>
+			<tr><th>枠全体の残り</th><td>合計定員 − 枠全体の予約人数（0 未満は 0）</td></tr>
+			<tr><th>馬の種類ごとの残り</th><td>「その馬の定員 − その馬の予約人数」と「枠全体の残り」の少ないほう</td></tr>
+		</tbody>
+	</table>
+	<p>例: 馬の定員 4・ポニーの定員 4（合計 8）の枠に、馬 4 名・ポニー 1 名の予約 → 馬の残り 0、ポニーの残り 3、枠全体の残り 3。</p>
+	<p>定員を超えて記録されるのは、定員を予約人数より少なく変更したとき、<span class="kbd">予約済みに戻す</span>、<span class="kbd">それでも来場済みにする</span> のときだけです。その場合も残りは 0 と表示されます（マイナスにはならない）。ダッシュボードの「時間ごと・馬ごとの未来場」の表、当日予約の画面、来場者の画面に出る「残り」は、どれもこの値です。</p>
+
+	<h3>23-3. 予約できる条件</h3>
+	<table>
+		<thead><tr><th style="width:44mm;">条件</th><th class="c">Web 予約</th><th class="c">当日予約（スタッフ）</th></tr></thead>
+		<tbody>
+			<tr><th>枠の状態が受付中</th><td class="c">必要</td><td class="c">中止でなければよい</td></tr>
+			<tr><th>終了時刻 − 予約受付の締切 より前</th><td class="c">必要</td><td class="c">不要</td></tr>
+			<tr><th>枠全体の残りが足りる</th><td class="c">必要</td><td class="c">必要</td></tr>
+			<tr><th>乗る馬の残りが足りる</th><td class="c">必要</td><td class="c">必要</td></tr>
+			<tr><th>体格が参加条件・馬の種類の条件に合う</th><td class="c">必要</td><td class="c">不要（スタッフが判断）</td></tr>
+			<tr><th>人数</th><td class="c">常に 1 名</td><td class="c">1〜上限人数</td></tr>
+			<tr><th>同意・保護者同意・メールアドレス</th><td class="c">必要</td><td class="c">不要（記録しない）</td></tr>
+			<tr><th>連続送信の制限（23-5）</th><td class="c">対象</td><td class="c">対象外</td></tr>
+		</tbody>
+	</table>
+	<p><b>来場者による取り消し</b>は、状態が「予約済み」である限りいつでもできます。「キャンセルは前日まで」は案内文であり、システムでは制限していません。当日に取り消された席は、予約受付の締切前（既定では枠の終了時刻の前）なら Web から再び予約できます。</p>
+
+	<h3>23-4. 同時に申し込まれたとき</h3>
+	<p>予約の確定時には、その時間枠の行をデータベースでロックしてから残り人数を数え、保存します。同じ枠への申込みが同時に届いても 1 件ずつ順番に処理されるため、定員を超えることはありません。あとから処理された方には「ちょうど満席になりました」と表示されます。念のため、保存後にもう一度人数を数え、超えていればその予約を取り消します（トランザクションが効かないデータベース向けの保険）。</p>
+	<p>一覧の残り人数は 30 秒ごとに更新される目安で、予約できるかどうかは送信した時点の判定がすべてです。</p>
+
+	<h3>23-5. 連続送信の制限</h3>
+	<p>いたずらや機械的な大量予約を防ぐため、同じ接続元（IP アドレス）からの Web 予約の送信を数え、<b>30 件</b>に達するとそれ以降の送信を断ります。数えるのは入力内容のチェックを通った送信で（満席で断られたものも含む）、最後に数えた送信から 10 分たつとリセットされます。</p>
+	<ul>
+		<li>会場の Wi-Fi や同じ回線からの申込みは同じ接続元になります。会場で大勢が一斉に予約すると制限に当たることがあるため、会場ではモバイル回線での予約を案内するか、「当日予約」で登録してください。</li>
+		<li>CDN やリバースプロキシを経由する構成では、すべての来場者が同じ接続元に見えることがあります。その構成で使う場合は事前に相談してください。</li>
+	</ul>
+
+	<h3>23-6. メールの送信状況</h3>
+	<p>「送信済み」は、WordPress がメールを送信処理に渡せたことを表し、相手に届いたことまでは保証しません。送信処理でエラーになった場合は「未送信」のまま残ります。当日予約はメールアドレスを記録しないので「なし」と表示されます。一斉メール・中止のお知らせの送信は、この欄には記録されません。</p>
+
+	<h3>23-7. 集金額</h3>
+	<table class="keep">
+		<tbody>
+			<tr><th style="width:36mm;">集金予定額</th><td>予約済み＋来場済みの予約の「支払額 × 人数」の合計。集金予定額と来場済み分がどちらも 0 円の日は、ダッシュボードに表示しない</td></tr>
+			<tr><th>来場済み分</th><td>来場済みの予約だけの「支払額 × 人数」の合計。受付で受け取った現金と一致するはずの金額</td></tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>支払額は、乗る馬の種類に登録した金額（9 章）が<b>予約した時点</b>で記録されます。あとから「馬の種類」の金額を変えても、既存の予約の金額は変わりません。</li>
+		<li>当日予約の支払額も、登録した行の馬の金額です。乗る馬を選び間違えると金額もずれます。</li>
+		<li>現金と合わない場合は、CSV の「支払額」「状態」で来場済みの行を確認します。支払額が空欄の行は、金額を登録していない馬の予約です。</li>
+	</ul>
+
+	<h3>23-8. 時刻</h3>
+	<p>すべての時刻は WordPress のタイムゾーン（17-1）で扱います。受付時刻・取消時刻もサーバーの時計ではなく、このタイムゾーンで記録されます。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">24</span>予約の状態</h2>
+
+	<h3>24-1. 4 つの状態</h3>
+	<table>
+		<thead><tr><th style="width:26mm;">状態</th><th class="c">定員に数える</th><th class="c">整理券の QR</th><th class="c">来場者の取消</th><th>受付で読んだとき</th></tr></thead>
+		<tbody>
+			<tr><th>予約済み</th><td class="c ok">○</td><td class="c ok">表示</td><td class="c ok">できる</td><td>OK（来場済みになる）</td></tr>
+			<tr><th>来場済み</th><td class="c ok">○</td><td class="c ng">非表示（「✓ 受付済み」を表示）</td><td class="c ng">できない</td><td>使用済み</td></tr>
+			<tr><th>自己キャンセル</th><td class="c ng">×</td><td class="c ng">非表示</td><td class="c ng">—</td><td>取消済み</td></tr>
+			<tr><th>無断キャンセル</th><td class="c ng">×</td><td class="c ng">非表示</td><td class="c ng">—</td><td>時間切れ（それでも来場済みにできる）</td></tr>
+		</tbody>
+	</table>
+	<p>スタッフがダッシュボードや当日予約の画面で <span class="kbd">取消</span> を押した場合も「自己キャンセル」として記録され、本人による取消かスタッフによる取消かは区別されません。区別が必要な場合は紙の名簿に控えてください。</p>
+
+	<h3>24-2. 状態の移り変わり</h3>
+	<table>
+		<thead><tr><th style="width:26mm;">元の状態</th><th style="width:26mm;">変わった先</th><th>きっかけ</th></tr></thead>
+		<tbody>
+			<tr><th rowspan="3">予約済み</th><td>来場済み</td><td>受付で QR を読む／手動照合／氏名で探す／ダッシュボードの <span class="kbd">来場済みにする</span></td></tr>
+			<tr><td>自己キャンセル</td><td>来場者が整理券ページで取り消す／ダッシュボード・当日予約の <span class="kbd">取消</span></td></tr>
+			<tr><td>無断キャンセル</td><td>自動処理（23-1。中止の枠は除く）／ダッシュボードの <span class="kbd">無断キャンセル</span></td></tr>
+			<tr><th>来場済み</th><td>予約済み</td><td><span class="kbd">予約済みに戻す</span>（受付時刻は消える）</td></tr>
+			<tr><th>自己キャンセル</th><td>予約済み</td><td><span class="kbd">予約済みに戻す</span>（定員は確認しない）</td></tr>
+			<tr><th rowspan="2">無断キャンセル</th><td>来場済み</td><td><span class="kbd">それでも来場済みにする</span>／<span class="kbd">来場済みにする</span>（定員は確認しない）</td></tr>
+			<tr><td>予約済み</td><td><span class="kbd">予約済みに戻す</span>。締切後の枠では次の自動処理で無断キャンセルに戻る</td></tr>
+			<tr><th>すべての状態</th><td>（なくなる）</td><td>ダッシュボードの <span class="kbd">削除</span>（運営スタッフ以上）、運用ツールのデータの削除</td></tr>
+		</tbody>
+	</table>
+	<p>当日予約で登録した予約は、最初から「来場済み」になります。</p>
+
+	<h3>24-3. 予約を削除したとき</h3>
+	<p>ダッシュボードの <span class="kbd">削除</span>（6-4）や、運用ツールの「データの削除」（13-10）で消した予約は、記録ごとなくなります。集計・名簿・CSV・過去の記録からも消え、整理券の URL は「整理券が見つかりませんでした。URL をご確認ください。」、受付では「該当なし」になります。元に戻すことはできません。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">25</span>イベント終了後</h2>
+
+	<h3>25-1. 当日中</h3>
+	<p>21-5 の手順（未来場の解放、集金の突き合わせ、CSV の保存）を行います。</p>
+
+	<h3>25-2. 振り返りに使える数字</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:36mm;">来場率</th><td>来場済み ÷（来場済み ＋ 無断キャンセル）。中止した枠の予約は無断キャンセルにならず「予約済み」のまま残るので、計算には入らない</td></tr>
+			<tr><th>当日予約の割合</th><td>CSV の「受付経路」が「当日枠」の行</td></tr>
+			<tr><th>馬の種類ごとの比率</th><td>CSV の「乗る馬」。「過去の記録」の時間ごと・馬ごとの状況の表でも見られる</td></tr>
+			<tr><th>体格の分布</th><td>CSV の身長・体重・年齢（来年の馬の種類の条件の見直しに使う。データの削除の前に集計しておく）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>25-3. 予約ページを閉じる</h3>
+	<p>終了後も予約ページはそのまま表示され、時間枠がなければ「現在、受付中の時間枠はありません。」と出ます。ショートコードの上に「今年の受付は終了しました」などの文を追加しておくと親切です。ショートコードを外すと、送信済みの整理券 URL も表示されなくなります。</p>
+
+	<h3>25-4. 記録の保管と削除</h3>
+	<p>予約の記録は、来年の参考にできるよう、消さない限り「過去の記録」（6-5）と時間枠のアーカイブ（10-1）に残ります。氏名やメールアドレスだけを消す機能はありません。保管期間を過ぎて不要になったら、次の手順で日付ごとに消します。</p>
+	<ol class="steps">
+		<li>名簿印刷から CSV を保存し、振り返りの集計を済ませます。</li>
+		<li><span class="kbd">設定</span> → <span class="kbd">運用ツール</span> → <span class="kbd">データの削除（リセット）</span> で、「予約データだけを削除する（時間枠は残す）」または「時間枠もまとめて削除する（初期化）」を選び、対象の日付を指定し、確認欄に「削除」または「初期化」と入力して実行します（日付を空欄にするとすべての日が対象になるので注意）。</li>
+		<li>保存した CSV にも個人情報が含まれるため、保管場所と削除時期を決めておきます。</li>
+	</ol>
+
+	<h3>25-5. アカウントと次回への準備</h3>
+	<ul>
+		<li>共有アカウントのパスワードを変更し、不要なスタッフ用アカウントは削除するか権限を外します（18 章）。</li>
+		<li>次回も同じ設定で使う場合は、時間枠と予約を「時間枠もまとめて削除する（初期化）」で消しても、設定と馬の種類はそのまま残ります。記録を残したまま次回の時間枠を作ることもできます（今日以降の枠だけが一覧・ダッシュボードに並ぶ）。</li>
+	</ul>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">26</span>トラブルシューティング</h2>
+	<p class="lead">症状から原因と対処を引けるようにまとめます。表の「参照」で詳しい説明の場所を示します。</p>
+
+	<h3>26-1. 来場者からの問い合わせ</h3>
+	<table>
+		<thead><tr><th style="width:46mm;">症状</th><th>原因と対処</th><th style="width:17mm;">参照</th></tr></thead>
+		<tbody>
+			<tr><th>確認メールが届かない</th><td>迷惑メール・受信拒否設定。ダッシュボードの検索で予約を探し、送信状況を確認して再送する。整理券 URL がなくても氏名で受付できる</td><td>22-4</td></tr>
+			<tr><th>整理券を開くと「見つかりませんでした」</th><td>URL が途中で切れている（メールアプリでの改行など）。または予約が削除された。受付は氏名で照合する</td><td>24-3</td></tr>
+			<tr><th>「送信内容を確認できませんでした」</th><td>ページを長時間開いたまま送信した、またはページがキャッシュされている。ページを再読み込みして最初からやり直してもらう。多発する場合はキャッシュを確認</td><td>4-2、20-3</td></tr>
+			<tr><th>「短時間に多くの予約操作が…」</th><td>同じ回線から 30 件を超えた。10 分待つか、モバイル回線で予約してもらう</td><td>23-5</td></tr>
+			<tr><th>「ちょうど満席になりました」</th><td>入力中に他の方が予約した。別の枠を選んでもらう</td><td>23-4</td></tr>
+			<tr><th>体格の条件に合わないと言われた</th><td>参加条件と馬の種類の条件どおりの判定。当日の判断で乗れる場合は「当日予約」で登録する</td><td>9-3、8</td></tr>
+			<tr><th>乗りたい馬が選べない</th><td>体格がその馬の条件に合わない、その馬の受付が停止中、または今日以降にその馬を出す時間枠がない（定員 0）</td><td>9-3、10-2</td></tr>
+			<tr><th>中止のお知らせが届いた。振替はできるか</th><td>中止の枠の予約は自動では取り消されない。別の枠を希望される場合は、Web で予約し直してもらうか、当日「当日予約」で登録する</td><td>10-3</td></tr>
+			<tr><th>家族の分をまとめて予約したい</th><td>Web は 1 件 1 名。同じメールアドレスで人数分申し込んでもらう（同一メールの重複予約が「許可」の場合）</td><td>13-1</td></tr>
+			<tr><th>予約を取り消したい（当日）</th><td>整理券ページの <span class="kbd">予約を取り消す</span> で取り消せる。会場で申し出られた場合はダッシュボードの検索で探して <span class="kbd">取消</span></td><td>23-3</td></tr>
+			<tr><th>予約の時間を変えたい</th><td>変更機能はない。取り消して取り直してもらう（空きがある場合）</td><td>—</td></tr>
+			<tr><th>名前・メールアドレスを間違えた</th><td>変更機能はない。受付は氏名の一部で探せる。整理券が必要なら取り直してもらう</td><td>22-4</td></tr>
+		</tbody>
+	</table>
+
+	<h3>26-2. 受付で</h3>
+	<table>
+		<thead><tr><th style="width:46mm;">症状</th><th>原因と対処</th><th style="width:17mm;">参照</th></tr></thead>
+		<tbody>
+			<tr><th>カメラが起動しない</th><td>https でない、ブラウザーのカメラ許可が拒否、ほかのアプリがカメラを使用中。「カメラの状態」を開いて確認する</td><td>7-6</td></tr>
+			<tr><th>カメラは映るが読み取らない</th><td>画面の反射・暗さ・距離。枠いっぱいに映す。だめなら写真で読み取る</td><td>22-2</td></tr>
+			<tr><th>「QR 読み取りライブラリ: なし」</th><td>最適化プラグインが JavaScript を結合している、またはファイル不足。除外設定を確認する</td><td>4-2</td></tr>
+			<tr><th>「使用済み」と出る</th><td>すでに受付済み。受付時刻を確認し、二重受付か同じ QR の使い回しかを判断する</td><td>7-2</td></tr>
+			<tr><th>「時間切れ」と出る</th><td>締切を過ぎて無断キャンセルになった。残りを確認して受け付ける</td><td>23-1</td></tr>
+			<tr><th>「該当なし」と出る</th><td>ほかのサイトの QR、または予約が削除された。氏名で探す</td><td>7-4</td></tr>
+			<tr><th>受付用に作った固定ページにボタンしか出ない</th><td>受付は管理画面の <span class="kbd">体験乗馬</span> → <span class="kbd">受付</span> に一本化された。ページの <span class="kbd">受付画面を開く</span> から移動する（ブックマークは管理画面の受付に変える）</td><td>A-1</td></tr>
+			<tr><th>当日予約で枠が出ない</th><td>今日の枠がない、すべて終了している（「終了した時間枠も表示する」を押す）、または「中止」の枠</td><td>8</td></tr>
+			<tr><th>ログインできない</th><td>パスワード違い、ログイン試行回数制限、国外 IP アクセス制限、ログイン URL の変更</td><td>20-5、19-3</td></tr>
+			<tr><th>突然ログイン画面に戻される</th><td>ログインの有効期限切れ、または誰かが「すべての場所からログアウト」を実行した。ログインし直す</td><td>18-3</td></tr>
+		</tbody>
+	</table>
+
+	<h3>26-3. 管理画面で</h3>
+	<table>
+		<thead><tr><th style="width:46mm;">症状</th><th>原因と対処</th><th style="width:17mm;">参照</th></tr></thead>
+		<tbody>
+			<tr><th>「来場者が予約するためのページがまだありません。」</th><td>設定の「予約ページ」が未選択、または予約ページが公開状態でない。お知らせの <span class="kbd">予約ページを自動で作成する</span> で作れる（運営スタッフのアカウントではページを公開する権限がなく作れないので、サイト管理者が押す）</td><td>3-1、19-1</td></tr>
+			<tr><th>今日なのに別の日が開く／時刻がずれる</th><td>WordPress のタイムゾーンが UTC のまま</td><td>17-1</td></tr>
+			<tr><th>開始前なのに無断キャンセルになった</th><td>同上。または枠の日付・開始時刻の入力ミス</td><td>17-1、10-2</td></tr>
+			<tr><th>未来場が減らない</th><td>WP-Cron が遅れている。<span class="kbd">未来場を解放</span> を押す。過去の日付の枠と「中止」の枠は自動処理の対象外</td><td>23-1</td></tr>
+			<tr><th>時間枠が削除できない</th><td>予約済み・来場済みの予約がある。「中止」にする</td><td>10-4</td></tr>
+			<tr><th>一括作成で枠が思ったより少ない</th><td>終了時刻を超える枠は作られない。終了時刻は最後の枠の終わりの時刻を入れる</td><td>10-5</td></tr>
+			<tr><th>設定を保存すると 403</th><td>WAF</td><td>20-4</td></tr>
+			<tr><th>馬の種類・時間枠・一斉メール・設定の画面がメニューにない</th><td>受付スタッフのアカウントでログインしている</td><td>1-2</td></tr>
+			<tr><th>昨日の予約がダッシュボードに出ない</th><td>当日ダッシュボードは今日以降の日だけを表示する。「過去の記録」で見る</td><td>6-5</td></tr>
+			<tr><th>予約の <span class="kbd">削除</span> ボタンがない</th><td>受付スタッフのアカウントでは表示されない</td><td>6-4</td></tr>
+			<tr><th>メニューに「体験乗馬」しか出ない</th><td>EquiTicket 専用ロールの仕様。WordPress の画面を使う場合は管理者でログインする</td><td>5-1</td></tr>
+			<tr><th>CSV が文字化けする</th><td>BOM 付き UTF-8 で出力しているので、Excel ではそのまま開ける。古い Excel や別のソフトで化ける場合は、「データ」→「テキストまたは CSV から」などで文字コードに UTF-8 を指定して読み込む</td><td>11</td></tr>
+			<tr><th>集金額が現金と合わない</th><td>支払額は予約時点の金額。当日予約での乗る馬の選び間違い、受付漏れ（来場済みになっていない）を CSV で確認する</td><td>23-7</td></tr>
+		</tbody>
+	</table>
+
+	<h3>26-4. メール</h3>
+	<table>
+		<thead><tr><th style="width:46mm;">症状</th><th>原因と対処</th><th style="width:17mm;">参照</th></tr></thead>
+		<tbody>
+			<tr><th>テストメールが届かない</th><td>送信元アドレスがサイトと別ドメイン、送信ドメイン認証の不足。SMTP 送信プラグインを検討する</td><td>4-3、20-6</td></tr>
+			<tr><th>差出人が「WordPress」になる</th><td>送信元の名前・アドレスが未設定</td><td>13-7</td></tr>
+			<tr><th>メールに QR コードがない</th><td>確認メールには QR の画像を載せていない。本文の URL を開くと整理券（QR）が表示される</td><td>16</td></tr>
+			<tr><th>一斉メールの宛先が 0 件</th><td>条件に合う「予約済み」でメールアドレスのある予約がない。来場済み・取消・中止の枠の予約、当日予約は宛先にならない</td><td>12-1</td></tr>
+			<tr><th>メールの案内文に <code>{fee}</code> などがそのまま出る</th><td>差し込みの綴り違い（半角の波かっこ・小文字）。使える差し込みは付録 A-3</td><td>A-3</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<!-- ================================================================ -->
+<div class="part">
+	<div class="part__num">付録</div>
+	<h1 class="part__title">資料</h1>
+	<p class="part__desc">差し込み・URL・既定値・権限・データの一覧です。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">A</span>ショートコード・URL・差し込み</h2>
+
+	<h3>A-1. ショートコード</h3>
+	<table>
+		<thead><tr><th style="width:52mm;">ショートコード</th><th>表示されるもの</th></tr></thead>
+		<tbody>
+			<tr><th><code>[equiticket_reservation]</code></th><td>予約ページ（4 ステップの申込み）。URL に <code>et_token</code> が付いているときは整理券を表示する。属性はない</td></tr>
+			<tr><th><code>[equiticket_checkin]</code></th><td>受付画面への案内だけを表示する。受付の権限があるユーザーには「受付は管理画面の「体験乗馬 → 受付」で行います。」と <span class="kbd">受付画面を開く</span>、それ以外の人には「受付画面はスタッフ用です。ログインしてからご利用ください。」と <span class="kbd">ログイン</span>（ログイン後は管理画面の受付が開く）。以前の版ではこのページでも受付ができたが、受付の画面が 2 つあると迷いやすいため、管理画面の受付に一本化された。新しく使う必要はない。属性はない</td></tr>
+		</tbody>
+	</table>
+
+	<h3>A-2. 画面の URL</h3>
+	<p><code>https://example.jp</code> の部分はサイトの URL に読み替えてください。ブックマークやホーム画面への追加に使えます。</p>
+	<table>
+		<thead><tr><th style="width:40mm;">画面</th><th>URL</th></tr></thead>
+		<tbody>
+			<tr><th>ログイン</th><td><code>https://example.jp/wp-login.php</code>（セキュリティ系プラグインで変更している場合はその URL）</td></tr>
+			<tr><th>当日ダッシュボード</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-dashboard</code></td></tr>
+			<tr><th>　日付・枠を指定</th><td>上の URL の末尾に <code>&amp;date=2026-09-27</code>（今日以降の日）。<code>&amp;slot=all</code> ですべての枠</td></tr>
+			<tr><th>過去の記録</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-records</code></td></tr>
+			<tr><th>受付</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-checkin</code></td></tr>
+			<tr><th>当日予約</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-walkin</code></td></tr>
+			<tr><th>馬の種類</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-horses</code></td></tr>
+			<tr><th>時間枠</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-slots</code>（アーカイブは末尾に <code>&amp;archive=1</code>）</td></tr>
+			<tr><th>名簿印刷</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-roster</code></td></tr>
+			<tr><th>一斉メール</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-mail</code></td></tr>
+			<tr><th>設定</th><td><code>https://example.jp/wp-admin/admin.php?page=equiticket-settings</code></td></tr>
+			<tr><th>整理券</th><td>予約ページの URL ＋ <code>?et_token=</code>（40 文字の英数字）。取消の直後は <code>&amp;et_msg=cancelled</code> が付く</td></tr>
+		</tbody>
+	</table>
+
+	<h3>A-3. 差し込み</h3>
+	<p>波かっこは半角、名前は小文字で書きます。対応していない場所に書いた差し込みは、そのままの文字で表示されます。</p>
+	<table>
+		<thead><tr><th style="width:26mm;">差し込み</th><th>置き換わる内容</th><th style="width:62mm;">使える場所</th></tr></thead>
+		<tbody>
+			<tr><th><code>{max_weight}</code></th><td>参加できる体重の上限（受付中の馬の種類の体重の上限のうち最大。例: 80）。上限のない馬があれば空</td><td rowspan="5">同意事項の本文、支払い方法の案内、キャンセル・中止について、注意事項、会場案内（画面・メールとも）、中止のお知らせの本文</td></tr>
+			<tr><th><code>{min_age}</code></th><td>参加できる最低年齢（例: 5）</td></tr>
+			<tr><th><code>{minor_age}</code></th><td>保護者の同意が必要な年齢（例: 18）</td></tr>
+			<tr><th><code>{fee}</code></th><td>馬の種類ごとの支払額をまとめたもの（例: ポニー 300 円／馬 500 円）</td></tr>
+			<tr><th><code>{event}</code></th><td>イベント名</td></tr>
+			<tr><th><code>{event}</code></th><td>イベント名</td><td rowspan="5">確認メールの件名、中止のお知らせの件名</td></tr>
+			<tr><th><code>{date}</code></th><td>枠の日付（例: 9月27日(日)）</td></tr>
+			<tr><th><code>{start}</code></th><td>開始時刻（例: 10:00）</td></tr>
+			<tr><th><code>{end}</code></th><td>終了時刻（例: 10:20）</td></tr>
+			<tr><th><code>{name}</code></th><td>予約者の名前</td></tr>
+			<tr><th>上の 5 つと<br /><code>{horse}</code> <code>{people}</code><br /><code>{number}</code> <code>{ticket_url}</code></th><td>乗る馬、人数、受付番号、整理券の URL（12-2）</td><td>一斉メールの件名・本文</td></tr>
+		</tbody>
+	</table>
+	<p>同意チェック・保護者同意・写真掲載の文言と、メール末尾の署名には差し込みは使えません。一斉メールでは <code>{max_weight}</code> などの設定値の差し込みは使えません。</p>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">B</span>既定値一覧</h2>
+	<p class="lead">有効化した直後の設定値と、入力できる範囲です。範囲外の数値は保存時に範囲内へ丸められます。</p>
+	<table>
+		<thead><tr><th style="width:18mm;">区分</th><th style="width:52mm;">項目</th><th>既定値</th><th style="width:22mm;">範囲</th></tr></thead>
+		<tbody>
+			<tr><th rowspan="7">基本設定</th><td>イベント名</td><td>体験乗馬コーナー</td><td>—</td></tr>
+			<tr><td>予約ページ</td><td>未設定</td><td>—</td></tr>
+			<tr><td>無断キャンセルの締切（分）</td><td>10</td><td>0〜240</td></tr>
+			<tr><td>予約受付の締切（終了の何分前まで）</td><td>0</td><td>0〜1440</td></tr>
+			<tr><td>当日予約 1 件あたりの上限人数</td><td>4</td><td>1〜20</td></tr>
+			<tr><td>1 人あたりの体験時間（分）</td><td>0（表示しない）</td><td>0〜120</td></tr>
+			<tr><td>同一メールの重複予約</td><td>許可</td><td>—</td></tr>
+			<tr><th rowspan="3">デザイン</th><td>メインカラー</td><td>#1f3a68</td><td>—</td></tr>
+			<tr><td>角の丸み</td><td>控えめ（6px）</td><td>—</td></tr>
+			<tr><td>書体</td><td>テーマの書体を使う</td><td>—</td></tr>
+			<tr><th rowspan="3">参加条件</th><td>参加できる最低年齢</td><td>5 歳</td><td>0〜120</td></tr>
+			<tr><td>保護者の同意が必要な年齢</td><td>18 歳</td><td>0〜30</td></tr>
+			<tr><td colspan="3" style="font-size:8.5pt;">来場者の入力の範囲: 身長 50〜250cm、体重 5〜200kg、年齢 0〜120</td></tr>
+			<tr><th rowspan="2">料金</th><td>支払い方法の案内</td><td>当日、受付で現金をお支払いください。おつりのないようご協力をお願いします。</td><td>—</td></tr>
+			<tr><td>キャンセル・中止について</td><td>キャンセルは前日までに…（3 行）</td><td>—</td></tr>
+			<tr><th rowspan="4">同意事項</th><td>同意事項の本文</td><td>9 項目（13-5）</td><td>—</td></tr>
+			<tr><td>同意チェックの文言</td><td>上記すべてに同意します</td><td>—</td></tr>
+			<tr><td>保護者同意チェックの文言</td><td>18 歳未満の参加者について、保護者の同意を得ています</td><td>—</td></tr>
+			<tr><td>写真掲載を希望しない場合のチェック文言</td><td>写真・動画の掲載を希望しません</td><td>—</td></tr>
+			<tr><th rowspan="2">案内文</th><td>注意事項</td><td>ヘルメット・服装・頭数変更の 3 行</td><td>—</td></tr>
+			<tr><td>会場案内</td><td>空欄</td><td>—</td></tr>
+			<tr><th rowspan="5">メール</th><td>送信者名・送信元メールアドレス</td><td>空欄（WordPress の既定）</td><td>—</td></tr>
+			<tr><td>件名</td><td>【{event}】体験乗馬 整理券のご案内（{date} {start}〜）</td><td>空欄なら既定に戻る</td></tr>
+			<tr><td>メール末尾の署名</td><td>空欄</td><td>—</td></tr>
+			<tr><td>中止のお知らせの件名</td><td>【中止のお知らせ】{event}（{date} {start}〜）</td><td>空欄なら既定に戻る</td></tr>
+			<tr><td>中止のお知らせの本文</td><td>誠に申し訳ありませんが、荒天や馬の体調などの理由により…（2 行）</td><td>—</td></tr>
+			<tr><th>個人情報</th><td>プラグイン削除時にデータも削除</td><td>オフ（残す）</td><td>—</td></tr>
+		</tbody>
+	</table>
+	<h4>馬の種類（初期）</h4>
+	<table>
+		<thead><tr><th style="width:18mm;">名前</th><th>乗れる条件</th><th style="width:22mm;">支払額</th><th style="width:18mm;">表示順</th></tr></thead>
+		<tbody>
+			<tr><th>ポニー</th><td>12 歳以下・身長 140cm 以下・体重 40kg 以下</td><td>300 円</td><td>10</td></tr>
+			<tr><th>馬</th><td>6 歳以上・身長 120cm 以上・体重 80kg 以下</td><td>500 円</td><td>20</td></tr>
+		</tbody>
+	</table>
+	<p>新しくインストールしたときだけ登録されます。入力できる範囲は、年齢 0〜120、身長・体重 0〜250（0 は制限なし）、支払額 0〜65535 円、表示順 0〜999 です。</p>
+	<h4>設定画面にない固定値</h4>
+	<table>
+		<tbody>
+			<tr><th style="width:52mm;">Web 予約の人数</th><td>1 件 1 名</td></tr>
+			<tr><th>お名前の長さ</th><td>50 文字以内（当日予約で空欄なら「当日受付」）</td></tr>
+			<tr><th>連続送信の制限</th><td>同じ接続元から 30 件。最後の送信から 10 分でリセット（23-5）</td></tr>
+			<tr><th>自動解放の間隔</th><td>WP-Cron で 5 分ごと。画面表示時は 1 分に 1 回まで（23-1）</td></tr>
+			<tr><th>空き状況の自動更新</th><td>30 秒ごと</td></tr>
+			<tr><th>整理券の受付済みの確認</th><td>予約済みの整理券ページで 5 秒ごと</td></tr>
+			<tr><th>受付で時間外とみなす幅</th><td>枠の開始 10 分前より前、終了 10 分後より後（記録はする）</td></tr>
+			<tr><th>整理券のトークン</th><td>40 文字（乱数 20 バイトの 16 進表記）</td></tr>
+			<tr><th>一括作成で一度に作れる枠</th><td>200 枠まで</td></tr>
+			<tr><th>時間枠の頭数・定員</th><td>馬の種類ごとに頭数 0〜50、定員 0〜999。新しい枠の初期値は受付中の馬に 1 頭・4 名</td></tr>
+			<tr><th>ダッシュボードの検索</th><td>すべての日から最大 100 件</td></tr>
+			<tr><th>当日予約の「今日の当日予約」</th><td>新しい順に 15 件</td></tr>
+			<tr><th>一斉メールの宛先の一覧</th><td>最初の 200 件を表示（送信はすべての宛先）</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="chapter">
+	<h2 class="chapter__title"><span class="num">C</span>権限とデータ</h2>
+	<p class="lead">ロール編集プラグインで権限を調整する場合や、データベースを直接確認する場合の参考です。</p>
+
+	<h3>C-1. 権限（capability）とロール</h3>
+	<table>
+		<thead><tr><th style="width:44mm;">権限</th><th>できること</th></tr></thead>
+		<tbody>
+			<tr><th><code>equiticket_checkin</code></th><td>当日ダッシュボード・過去の記録（予約の操作）、受付、当日予約、名簿印刷・CSV</td></tr>
+			<tr><th><code>equiticket_manage</code></th><td>馬の種類、時間枠、一斉メール、設定（運用ツールを含む）、予約の削除</td></tr>
+			<tr><th><code>create_users</code>（WordPress 標準）</th><td>設定画面でのスタッフ用アカウントの作成</td></tr>
+			<tr><th><code>publish_pages</code>（WordPress 標準）</th><td><span class="kbd">予約ページを自動で作成する</span>（<code>equiticket_manage</code> と両方が必要）</td></tr>
+		</tbody>
+	</table>
+	<table>
+		<thead><tr><th style="width:44mm;">ロール（スラッグ）</th><th>権限</th></tr></thead>
+		<tbody>
+			<tr><th>体験乗馬 受付スタッフ<br /><code>equiticket_staff</code></th><td><code>read</code>、<code>equiticket_checkin</code></td></tr>
+			<tr><th>体験乗馬 運営スタッフ<br /><code>equiticket_manager</code></th><td><code>read</code>、<code>equiticket_checkin</code>、<code>equiticket_manage</code></td></tr>
+			<tr><th>管理者 <code>administrator</code></th><td>有効化時に両方を追加</td></tr>
+			<tr><th>編集者 <code>editor</code></th><td>有効化時に <code>equiticket_checkin</code> を追加</td></tr>
+		</tbody>
+	</table>
+	<p>管理画面の制限（5-1）は、EquiTicket の権限を持ち、かつ WordPress の <code>manage_options</code>・<code>edit_posts</code>・<code>edit_pages</code>・<code>upload_files</code>・<code>list_users</code> のいずれも持たないユーザーにかかります。投稿を書ける編集者・投稿者などには制限はかかりません。</p>
+
+	<h3>C-2. データベース</h3>
+	<p>テーブル名の <code>wp_</code> はサイトの接頭辞です。</p>
+	<table>
+		<thead><tr><th style="width:44mm;">テーブル</th><th>主な列</th></tr></thead>
+		<tbody>
+			<tr><th><code>wp_equiticket_time_slots</code><br />（時間枠）</th><td><code>event_date</code> 日付、<code>start_time</code> <code>end_time</code> 時刻、<code>capacity</code> 合計定員（馬ごとの定員の合計）、<code>status</code>（<code>open</code> 受付中／<code>closed</code> 受付停止／<code>cancelled</code> 中止）、<code>note</code> 備考。古い版から更新したサイトには、使われなくなった馬・ポニーの頭数・定員の列が残っていることがある</td></tr>
+			<tr><th><code>wp_equiticket_horses</code><br />（馬の種類）</th><td><code>name</code> 名前、<code>description</code> 説明、<code>min_age</code> <code>max_age</code> <code>min_height</code> <code>max_height</code> <code>min_weight</code> <code>max_weight</code> 条件（0 は制限なし）、<code>fee_amount</code> 支払額、<code>sort_order</code> 表示順、<code>active</code> 受付する</td></tr>
+			<tr><th><code>wp_equiticket_slot_horses</code><br />（時間枠ごとに出す馬）</th><td><code>slot_id</code> 時間枠、<code>horse_id</code> 馬の種類、<code>horse_count</code> 頭数、<code>capacity</code> 定員</td></tr>
+			<tr><th><code>wp_equiticket_reservations</code><br />（予約）</th><td><code>slot_id</code> 時間枠、<code>name</code> <code>email</code>、<code>people_count</code> 人数、<code>horse_id</code> 乗る馬、<code>horse_name</code> 予約時の馬の名前（馬の種類が削除されたときの表示用）、<code>height_cm</code> <code>weight_kg</code> <code>age</code>、<code>fee_amount</code> <code>fee_label</code> 支払額、<code>guardian_consent</code> 保護者同意、<code>photo_optout</code> 写真掲載 NG、<code>qr_token</code> トークン、<code>status</code>（<code>reserved</code>／<code>checked_in</code>／<code>cancelled</code>／<code>no_show</code>）、<code>source</code>（<code>web</code>／<code>staff</code>）、<code>note</code>、<code>created_at</code> <code>checked_in_at</code> <code>cancelled_at</code> <code>mail_sent_at</code></td></tr>
+		</tbody>
+	</table>
+	<p>受付番号（No.0001）は予約の <code>id</code> です。</p>
+
+	<h3>C-3. WordPress に保存するもの</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:44mm;"><code>equiticket_settings</code></th><td>設定値すべて（オプション）</td></tr>
+			<tr><th><code>equiticket_db_version</code></th><td>テーブル構成の版（現在 7）。更新時の自動移行に使う</td></tr>
+			<tr><th><code>equiticket_last_sweep</code></th><td>自動解放の最終実行時刻（ダッシュボードの「最後の自動解放」）</td></tr>
+			<tr><th><code>equiticket_sweep</code></th><td>WP-Cron のイベント名（間隔 <code>equiticket_five_minutes</code>）</td></tr>
+			<tr><th>一時データ（transient）</th><td><code>equiticket_throttle_…</code> 連続送信の回数、<code>equiticket_sweep_lock</code> 画面表示時の自動解放の間隔、<code>equiticket_notices_…</code> 管理画面のお知らせ、<code>equiticket_checkin_result_…</code> 受付結果の表示、<code>equiticket_bulk_mail_draft_…</code> 一斉メールの書きかけ（1 日）</td></tr>
+		</tbody>
+	</table>
+
+	<h3>C-4. 開発者向けのフック</h3>
+	<table>
+		<tbody>
+			<tr><th style="width:44mm;"><code>equiticket_reservation_created</code></th><td>予約が確定した直後（Web 予約・当日予約とも）。引数: 予約、時間枠</td></tr>
+			<tr><th><code>equiticket_reservation_checked_in</code></th><td>来場済みにした直後（当日予約の登録時を含む）。引数: 予約</td></tr>
+		</tbody>
+	</table>
+	<p>テーマの <code>functions.php</code> や独自プラグインから <code>add_action()</code> で処理を追加できます（例: 予約があったら運営チームのチャットに通知する）。</p>
+</div>
+<script>
+/*
+ * もくじを本文の見出しから作る。
+ * ページ番号は bin/build-manual.sh が一度 PDF にしてから読み取り、window.EQUITICKET_TOC_PAGES で渡す
+ * （"placeholder" のときは桁だけ確保する）。ブラウザーで直接開いたときは番号なしで表示する。
+ */
+( function () {
+	var pages = window.EQUITICKET_TOC_PAGES || null;
+	var toc = document.getElementById( 'toc' );
+	var entries = [];
+
+	function el( tag, className, text ) {
+		var node = document.createElement( tag );
+		if ( className ) {
+			node.className = className;
+		}
+		if ( text ) {
+			node.textContent = text;
+		}
+		return node;
+	}
+
+	document.querySelectorAll( '.part, .chapter' ).forEach( function ( section ) {
+		var isPart = section.classList.contains( 'part' );
+		var heading = isPart ? section.querySelector( '.part__title' ) : section.querySelector( 'h2.chapter__title' );
+		var numNode = heading && ( isPart ? section.querySelector( '.part__num' ) : heading.querySelector( '.num' ) );
+
+		if ( ! heading || ! numNode ) {
+			return;
+		}
+
+		var num = numNode.textContent.trim();
+		var title = isPart ? heading.textContent.trim() : heading.textContent.trim().slice( num.length ).trim();
+		var index = entries.length;
+		var id = 'sec-' + index;
+		var li = el( 'li', isPart ? 'toc-part' : '' );
+		var row = el( 'a', 'toc-row' );
+		var page = el( 'span', 'page' );
+
+		heading.id = id;
+		row.href = '#' + id;
+
+		if ( isPart ) {
+			row.appendChild( el( 'span', '', num + '　' + title ) );
+		} else {
+			row.appendChild( el( 'b', '', num ) );
+			row.appendChild( el( 'span', '', title ) );
+		}
+
+		if ( 'placeholder' === pages ) {
+			page.textContent = '000';
+		} else if ( pages && pages[ index ] ) {
+			page.textContent = String( pages[ index ] );
+		}
+		row.appendChild( page );
+		li.appendChild( row );
+
+		if ( ! isPart ) {
+			var subs = [];
+			section.querySelectorAll( 'h3' ).forEach( function ( h3 ) {
+				subs.push( h3.textContent.trim().replace( /^([0-9A-Z]+-[0-9]+)\.\s*/, '$1 ' ) );
+			} );
+			if ( subs.length ) {
+				li.appendChild( el( 'div', 'toc-sub', subs.join( '　' ) ) );
+			}
+		}
+
+		toc.appendChild( li );
+		entries.push( { level: isPart ? 1 : 2, title: isPart ? num + ' ' + title : num + ' ' + title } );
+	} );
+
+	window.EQUITICKET_TOC_ENTRIES = entries;
+} )();
+</script>
+</body>
+</html>

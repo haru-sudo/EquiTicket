@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, zlib, gd
+
+      - name: Lint PHP files
+        run: find . -name '*.php' -not -path './dist/*' -print0 | xargs -0 -n1 -P4 php -l
+
+      - name: Run tests
+        run: php tests/run-tests.php
+
+  # main へのプッシュでテストが通ったら、プラグイン ZIP を Releases に載せる。
+  # - equiticket.php の Version がまだリリースされていなければ、正式版 v<Version> を作る。
+  # - すでにリリース済みなら、開発版（タグ dev のプレリリース）を最新のコミットで作り直す。
+  release:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read plugin version
+        id: version
+        run: |
+          header="$(sed -n 's/^ \* Version:[[:space:]]*//p' equiticket.php | tr -d '[:space:]')"
+          constant="$(sed -n "s/^define( 'EQUITICKET_VERSION', '\(.*\)' );/\1/p" equiticket.php)"
+          if [ -z "${header}" ] || [ "${header}" != "${constant}" ]; then
+            echo "::error file=equiticket.php::プラグインヘッダの Version (${header}) と EQUITICKET_VERSION (${constant}) が一致しません"
+            exit 1
+          fi
+          echo "version=${header}" >> "$GITHUB_OUTPUT"
+
+      - name: Build ZIP
+        run: bash bin/build-zip.sh
+
+      - name: Publish release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+
+          if ! gh release view "v${VERSION}" > /dev/null 2>&1; then
+            asset="dist/equiticket-${VERSION}.zip"
+            cp dist/equiticket.zip "${asset}"
+            gh release create "v${VERSION}" "${asset}" \
+              --target "${GITHUB_SHA}" \
+              --title "EquiTicket ${VERSION}" \
+              --generate-notes \
+              --latest
+            # 正式版より古くなる開発版は消しておく。
+            gh release delete dev --cleanup-tag --yes > /dev/null 2>&1 || true
+            exit 0
+          fi
+
+          asset="dist/equiticket-${VERSION}-dev.${short_sha}.zip"
+          cp dist/equiticket.zip "${asset}"
+          gh release delete dev --cleanup-tag --yes > /dev/null 2>&1 || true
+          # タグの削除が反映されるまで少し待つ（同名タグの作成に失敗しないように）。
+          sleep 5
+          gh release create dev "${asset}" \
+            --target "${GITHUB_SHA}" \
+            --title "開発版 (${VERSION} + ${short_sha})" \
+            --notes "main の最新コミット ${GITHUB_SHA} から自動で作った開発版です。正式版は equiticket.php の Version を上げてプッシュすると作られます。" \
+            --prerelease

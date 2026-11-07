@@ -1,0 +1,1289 @@
+/**
+ * 来場者・受付スタッフ向け画面のスタイル。
+ *
+ * ・会場ではほぼ全員がスマートフォンから開くため、狭い画面を基準に組んでいる
+ * ・テーマ側の CSS に負けて入力欄やボタンの見た目が崩れないよう、
+ *   .equiticket で囲んだうえで要素セレクターも併記して詳細度を上げている
+ * ・テーマが暗い配色でも読めるように、カード内の背景色と文字色は明示する
+ */
+
+.equiticket {
+	/* 色は設定画面の「メインカラー」で上書きされる（既定はこの値）。 */
+	--et-accent: #1f3a68;
+	--et-accent-strong: #16294a;
+	--et-accent-soft: #e9edf4;
+	--et-on-accent: #ffffff;
+	--et-focus-ring: rgba(31, 58, 104, 0.28);
+	--et-surface: #ffffff;
+	--et-surface-alt: #f5f7f6;
+	--et-text: #1f2933;
+	--et-muted: #5f6b76;
+	--et-border: #d5dadd;
+	--et-border-strong: #b9c0c5;
+	--et-danger: #b32d2e;
+	--et-danger-soft: #fdecea;
+	--et-warning: #8a5a00;
+	--et-warning-soft: #fdf6e7;
+	/* 角の丸みも設定画面で切り替えられる（既定は控えめ）。 */
+	--et-radius: 6px;
+	--et-radius-sm: 4px;
+
+	box-sizing: border-box;
+	max-width: 660px;
+	margin: 0 auto;
+	padding: 20px 16px 24px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius);
+	background: var(--et-surface);
+	color: var(--et-text);
+	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+	font-size: 16px;
+	line-height: 1.75;
+	text-align: left;
+	box-shadow: 0 1px 2px rgba(15, 23, 32, 0.04);
+}
+
+.equiticket *,
+.equiticket *::before,
+.equiticket *::after {
+	box-sizing: inherit;
+}
+
+/*
+ * ボタンなどに display を指定しているため、hidden 属性（ブラウザー既定の display: none）が
+ * 負けてしまう。スクリプトで出し入れする要素（停止ボタン・写真で読み取る など）が
+ * 最初から見えないよう、hidden を最優先にする。
+ */
+.equiticket [hidden] {
+	display: none !important;
+}
+
+.equiticket p,
+.equiticket ul,
+.equiticket ol,
+.equiticket dl {
+	color: inherit;
+}
+
+/* 見出し */
+.equiticket .equiticket__title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 12px;
+	padding: 0;
+	border: 0;
+	color: var(--et-text);
+	font-size: 1.35em;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.equiticket .equiticket__title::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 5px;
+	height: 1.2em;
+	border-radius: 3px;
+	background: var(--et-accent);
+}
+
+.equiticket__lead,
+.equiticket__meta {
+	margin: 0 0 12px;
+	color: var(--et-muted);
+	font-size: 0.95em;
+}
+
+.equiticket .equiticket__date {
+	margin: 22px 0 10px;
+	padding: 0 0 6px;
+	border-bottom: 2px solid var(--et-accent-soft);
+	color: var(--et-text);
+	font-size: 1.1em;
+	font-weight: 700;
+}
+
+.equiticket h3 {
+	color: var(--et-text);
+}
+
+/* 申込みステップの表示 */
+.equiticket .equiticket-steps {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+	margin: 0 0 18px;
+	padding: 0;
+	list-style: none;
+	counter-reset: none;
+}
+
+.equiticket .equiticket-steps__item {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	padding: 8px 4px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+	color: var(--et-muted);
+	font-size: 0.72em;
+	line-height: 1.3;
+	text-align: center;
+}
+
+.equiticket .equiticket-steps__item.is-current {
+	border-color: var(--et-accent);
+	background: var(--et-accent-soft);
+	color: var(--et-accent-strong);
+	font-weight: 700;
+}
+
+.equiticket .equiticket-steps__item.is-done {
+	border-color: var(--et-accent-soft);
+	color: var(--et-accent);
+}
+
+.equiticket-steps__number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: #e3e7e9;
+	color: var(--et-muted);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.equiticket .equiticket-steps__item.is-current .equiticket-steps__number,
+.equiticket .equiticket-steps__item.is-done .equiticket-steps__number {
+	background: var(--et-accent);
+	color: var(--et-on-accent);
+}
+
+/* 入力欄 */
+.equiticket .equiticket-field {
+	margin: 0 0 18px;
+}
+
+.equiticket .equiticket-field > label {
+	display: block;
+	margin: 0 0 6px;
+	color: var(--et-text);
+	font-size: 0.95em;
+	font-weight: 700;
+}
+
+.equiticket input[type="text"],
+.equiticket input[type="email"],
+.equiticket input[type="number"],
+.equiticket input[type="tel"],
+.equiticket input[type="search"],
+.equiticket input[type="url"],
+.equiticket select,
+.equiticket textarea,
+.equiticket .equiticket-input {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	min-height: 52px;
+	margin: 0;
+	padding: 12px 14px;
+	border: 1.5px solid var(--et-border-strong);
+	border-radius: var(--et-radius-sm);
+	background: #fff;
+	color: var(--et-text);
+	font-family: inherit;
+	font-size: 16px; /* iOS で自動ズームしないサイズ */
+	line-height: 1.5;
+	-webkit-appearance: none;
+	appearance: none;
+	box-shadow: none;
+}
+
+.equiticket select {
+	padding-right: 36px;
+	background-image: linear-gradient( 45deg, transparent 50%, var(--et-muted) 50% ), linear-gradient( 135deg, var(--et-muted) 50%, transparent 50% );
+	background-position: calc( 100% - 20px ) 50%, calc( 100% - 14px ) 50%;
+	background-size: 6px 6px, 6px 6px;
+	background-repeat: no-repeat;
+}
+
+.equiticket input:focus,
+.equiticket select:focus,
+.equiticket textarea:focus,
+.equiticket .equiticket-input:focus {
+	border-color: var(--et-accent);
+	outline: none;
+	box-shadow: 0 0 0 3px var(--et-focus-ring);
+}
+
+/* 数値入力（身長・体重・年齢）は単位を右に添える */
+.equiticket .equiticket-field__control {
+	display: flex;
+	align-items: stretch;
+	gap: 0;
+}
+
+.equiticket .equiticket-field__control input {
+	flex: 1 1 auto;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	font-size: 1.15em;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.equiticket .equiticket-field__unit {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	min-width: 56px;
+	padding: 0 14px;
+	border: 1.5px solid var(--et-border-strong);
+	border-left: 0;
+	border-radius: 0 var(--et-radius-sm) var(--et-radius-sm) 0;
+	background: var(--et-surface-alt);
+	color: var(--et-muted);
+	font-size: 0.95em;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.equiticket .equiticket-field--checkbox {
+	padding: 12px 14px;
+	border: 1.5px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+}
+
+.equiticket .equiticket-field--checkbox > label {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	font-size: 0.95em;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+.equiticket .equiticket-field--checkbox input[type="checkbox"],
+.equiticket .equiticket-field--checkbox input[type="radio"] {
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	margin: 2px 0 0;
+	accent-color: var(--et-accent);
+}
+
+.equiticket .equiticket-required {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 7px;
+	border-radius: 999px;
+	background: var(--et-danger-soft);
+	color: var(--et-danger);
+	font-size: 0.7em;
+	font-weight: 700;
+	vertical-align: 2px;
+}
+
+.equiticket .equiticket-help {
+	display: block;
+	margin: 6px 0 0;
+	color: var(--et-muted);
+	font-size: 0.85em;
+	line-height: 1.6;
+}
+
+/* ボタン */
+.equiticket button.equiticket-button,
+.equiticket a.equiticket-button,
+.equiticket label.equiticket-button,
+.equiticket span.equiticket-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 52px;
+	margin: 0;
+	padding: 13px 22px;
+	border: 2px solid var(--et-accent);
+	border-radius: var(--et-radius-sm);
+	background: #fff;
+	color: var(--et-accent-strong);
+	font-family: inherit;
+	font-size: 1em;
+	font-weight: 700;
+	line-height: 1.3;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+	-webkit-appearance: none;
+	appearance: none;
+	box-shadow: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.equiticket button.equiticket-button:hover,
+.equiticket a.equiticket-button:hover,
+.equiticket label.equiticket-button:hover {
+	background: var(--et-accent-soft);
+	color: var(--et-accent-strong);
+}
+
+.equiticket button.equiticket-button:focus-visible,
+.equiticket a.equiticket-button:focus-visible,
+.equiticket label.equiticket-button:focus-within {
+	outline: 3px solid var(--et-focus-ring);
+	outline-offset: 2px;
+}
+
+.equiticket button.equiticket-button--primary,
+.equiticket a.equiticket-button--primary,
+.equiticket label.equiticket-button--primary {
+	background: var(--et-accent);
+	border-color: var(--et-accent);
+	color: var(--et-on-accent);
+}
+
+.equiticket button.equiticket-button--primary:hover,
+.equiticket a.equiticket-button--primary:hover {
+	background: var(--et-accent-strong);
+	border-color: var(--et-accent-strong);
+	color: var(--et-on-accent);
+}
+
+.equiticket button.equiticket-button--quiet,
+.equiticket a.equiticket-button--quiet,
+.equiticket label.equiticket-button--quiet {
+	border-color: var(--et-border-strong);
+	background: #fff;
+	color: var(--et-muted);
+}
+
+.equiticket button.equiticket-button--quiet:hover,
+.equiticket a.equiticket-button--quiet:hover,
+.equiticket label.equiticket-button--quiet:hover {
+	background: var(--et-surface-alt);
+	color: var(--et-text);
+}
+
+.equiticket button.equiticket-button--small,
+.equiticket a.equiticket-button--small,
+.equiticket span.equiticket-button--small {
+	min-height: 40px;
+	padding: 8px 14px;
+	font-size: 0.88em;
+}
+
+.equiticket span.equiticket-button--disabled,
+.equiticket button.equiticket-button--disabled,
+.equiticket button.equiticket-button:disabled {
+	border-color: var(--et-border);
+	background: #eceff0;
+	color: #8a949b;
+	cursor: default;
+	box-shadow: none;
+}
+
+.equiticket .equiticket-actions {
+	margin: 22px 0 8px;
+}
+
+.equiticket .equiticket-actions .equiticket-button {
+	width: 100%;
+	min-height: 56px;
+	font-size: 1.05em;
+}
+
+.equiticket .equiticket-back {
+	margin: 18px 0 0;
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-back a {
+	color: var(--et-accent-strong);
+	text-decoration: underline;
+}
+
+/* 時間枠の一覧 */
+.equiticket .equiticket-slots {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.equiticket .equiticket-slot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 14px;
+	margin: 0 0 10px;
+	padding: 14px;
+	border: 1.5px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: #fff;
+}
+
+/* 枠の中に、乗れる馬ごとの行を並べる */
+.equiticket .equiticket-slot__head {
+	flex: 1 1 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 4px 10px;
+}
+
+.equiticket .equiticket-slot__option {
+	flex: 1 1 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 12px;
+	padding: 10px 0 0;
+	border-top: 1px solid var(--et-border);
+}
+
+.equiticket .equiticket-slot__horse {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 10px;
+}
+
+.equiticket .equiticket-slot__horse strong {
+	font-size: 1.05em;
+}
+
+.equiticket .equiticket-slot__fee {
+	color: var(--et-muted);
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-slot__option.is-closed {
+	color: var(--et-muted);
+}
+
+.equiticket .equiticket-horse-guide {
+	display: grid;
+	gap: 8px;
+	margin: 0 0 14px;
+}
+
+.equiticket .equiticket-horse-guide__item {
+	padding: 10px 12px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+}
+
+.equiticket .equiticket-horse-guide__item .equiticket-choice__note {
+	display: block;
+	margin-top: 2px;
+	color: var(--et-muted);
+	font-size: 0.88em;
+}
+
+.equiticket .equiticket-slot--disabled {
+	border-style: dashed;
+	background: var(--et-surface-alt);
+	color: var(--et-muted);
+}
+
+.equiticket-slot__time {
+	flex: 0 0 auto;
+	font-size: 1.2em;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.01em;
+}
+
+.equiticket-slot__info {
+	flex: 1 1 140px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	font-size: 0.88em;
+}
+
+.equiticket .equiticket-slot__remaining {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--et-accent-soft);
+	color: var(--et-accent-strong);
+	font-weight: 700;
+}
+
+.equiticket .equiticket-slot__status {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: var(--et-danger-soft);
+	color: var(--et-danger);
+	font-weight: 700;
+}
+
+.equiticket-slot__horses,
+.equiticket-slot__note {
+	color: var(--et-muted);
+}
+
+.equiticket .equiticket-slot__form {
+	margin: 0;
+	flex: 0 0 auto;
+}
+
+.equiticket .equiticket-slot .equiticket-button {
+	min-height: 46px;
+	padding: 10px 18px;
+}
+
+/* 通知 */
+.equiticket .equiticket-alert {
+	margin: 0 0 16px;
+	padding: 13px 15px;
+	border: 1px solid transparent;
+	border-left: 5px solid;
+	border-radius: var(--et-radius-sm);
+	font-size: 0.95em;
+}
+
+.equiticket .equiticket-alert--success {
+	border-color: var(--et-accent);
+	background: var(--et-accent-soft);
+	color: var(--et-accent-strong);
+}
+
+.equiticket .equiticket-alert--warning {
+	border-color: #d59b00;
+	background: var(--et-warning-soft);
+	color: var(--et-warning);
+}
+
+.equiticket .equiticket-alert--error {
+	border-color: var(--et-danger);
+	background: var(--et-danger-soft);
+	color: #8f2122;
+}
+
+.equiticket .equiticket-empty {
+	margin: 0 0 16px;
+	padding: 14px;
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+	color: var(--et-muted);
+}
+
+/* 案内ブロック（注意事項・会場・同意事項など） */
+.equiticket .equiticket-notice,
+.equiticket .equiticket-terms,
+.equiticket .equiticket-fee,
+.equiticket .equiticket-payment {
+	margin: 20px 0;
+	padding: 14px 15px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+}
+
+.equiticket .equiticket-notice h3,
+.equiticket .equiticket-terms h3,
+.equiticket .equiticket-fee h3,
+.equiticket .equiticket-payment h3 {
+	margin: 0 0 8px;
+	font-size: 1em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-notice__body {
+	font-size: 0.92em;
+}
+
+.equiticket .equiticket-terms {
+	background: #fff;
+}
+
+.equiticket .equiticket-terms__body {
+	max-height: 300px;
+	overflow-y: auto;
+	padding: 12px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+	font-size: 0.88em;
+	line-height: 1.7;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* 当日の支払額 */
+.equiticket .equiticket-fee {
+	background: #fff;
+}
+
+.equiticket .equiticket-fee .equiticket-field {
+	margin: 0 0 10px;
+}
+
+.equiticket .equiticket-fee .equiticket-field--checkbox {
+	background: #fff;
+	border-color: var(--et-border-strong);
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.equiticket .equiticket-fee .equiticket-field--checkbox:hover {
+	background: var(--et-accent-soft);
+}
+
+.equiticket .equiticket-fee__label {
+	font-size: 1.05em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-fee input[type="radio"]:checked + .equiticket-fee__label {
+	color: var(--et-accent-strong);
+}
+
+.equiticket .equiticket-payment {
+	border-color: var(--et-accent);
+	background: var(--et-accent-soft);
+}
+
+.equiticket .equiticket-payment p {
+	margin: 0 0 6px;
+	font-size: 0.92em;
+}
+
+.equiticket .equiticket-payment__fee {
+	font-size: 1.2em !important;
+	font-weight: 700;
+	color: var(--et-accent-strong);
+}
+
+/* 振り分け結果・馬の選択 */
+.equiticket .equiticket-assignment {
+	margin: 0 0 18px;
+	padding: 14px 15px;
+	border: 1px solid var(--et-accent);
+	border-left-width: 5px;
+	border-radius: var(--et-radius-sm);
+	background: var(--et-accent-soft);
+}
+
+.equiticket .equiticket-assignment__type {
+	margin: 0;
+	font-size: 1.15em;
+	font-weight: 700;
+	color: var(--et-accent-strong);
+}
+
+.equiticket .equiticket-assignment__message {
+	margin: 4px 0 0;
+	color: var(--et-accent-strong);
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-choice {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 18px 0;
+}
+
+.equiticket .equiticket-choice__item {
+	flex: 1 1 220px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0;
+	padding: 18px 16px;
+	border: 1.5px solid var(--et-border);
+	border-radius: var(--et-radius);
+	background: #fff;
+	text-align: center;
+}
+
+.equiticket .equiticket-choice__item .equiticket-button {
+	width: 100%;
+	min-height: 56px;
+	font-size: 1.1em;
+}
+
+.equiticket .equiticket-choice__note {
+	color: var(--et-muted);
+	font-size: 0.85em;
+	line-height: 1.6;
+}
+
+.equiticket .equiticket-switch {
+	margin: 10px 0 0;
+}
+
+/* 整理券 */
+.equiticket .equiticket-details {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0;
+	margin: 16px 0;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	overflow: hidden;
+}
+
+.equiticket .equiticket-details dt {
+	margin: 0;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--et-border);
+	background: var(--et-surface-alt);
+	color: var(--et-muted);
+	font-size: 0.85em;
+	white-space: nowrap;
+}
+
+.equiticket .equiticket-details dd {
+	margin: 0;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--et-border);
+	font-weight: 700;
+}
+
+.equiticket .equiticket-details dt:last-of-type,
+.equiticket .equiticket-details dd:last-of-type {
+	border-bottom: 0;
+}
+
+.equiticket .equiticket-qr {
+	margin: 18px 0;
+	padding: 16px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius);
+	background: #fff;
+	text-align: center;
+}
+
+.equiticket .equiticket-qr svg {
+	display: inline-block;
+	width: 260px;
+	max-width: 100%;
+	height: auto;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.equiticket .equiticket-inapp {
+	margin: 0 0 16px;
+	padding: 12px 14px;
+	border: 1px solid #d59b00;
+	border-radius: var(--et-radius);
+	background: var(--et-warning-soft);
+	text-align: center;
+}
+
+.equiticket .equiticket-inapp[hidden] {
+	display: none;
+}
+
+.equiticket .equiticket-inapp p {
+	margin: 0 0 8px;
+}
+
+.equiticket .equiticket-inapp p:last-child {
+	margin: 0;
+}
+
+.equiticket .equiticket-qr img {
+	display: inline-block;
+	width: 260px;
+	max-width: 100%;
+	height: auto;
+	border: 0;
+	border-radius: 4px;
+	background: #fff;
+	image-rendering: pixelated;
+}
+
+.equiticket .equiticket-qr figcaption {
+	margin: 10px 0 0;
+	color: var(--et-muted);
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-url {
+	margin: 12px 0;
+	font-size: 0.85em;
+	color: var(--et-muted);
+}
+
+.equiticket .equiticket-url code {
+	display: block;
+	margin-top: 4px;
+	padding: 10px 12px;
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+	color: var(--et-text);
+	font-size: 0.85em;
+	overflow-wrap: anywhere;
+}
+
+.equiticket .equiticket-status {
+	display: inline-block;
+	margin: 0 0 12px;
+	padding: 5px 14px;
+	border-radius: 999px;
+	font-size: 0.88em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-status--reserved {
+	background: var(--et-accent-soft);
+	color: var(--et-accent-strong);
+}
+
+.equiticket .equiticket-status--checked_in {
+	background: #e5eefb;
+	color: #1b4ba8;
+}
+
+.equiticket .equiticket-status--cancelled,
+.equiticket .equiticket-status--no_show {
+	background: #eef0f1;
+	color: var(--et-muted);
+}
+
+/* 整理券: 受付済みの表示 */
+.equiticket .equiticket-checked-in {
+	margin: 0 0 16px;
+	padding: 18px 16px;
+	border-radius: var(--et-radius);
+	background: #1f7a3f;
+	color: #fff;
+	text-align: center;
+}
+
+.equiticket .equiticket-checked-in p {
+	margin: 0;
+	color: inherit;
+}
+
+.equiticket .equiticket-checked-in__headline {
+	font-size: 1.9em;
+	font-weight: 800;
+	line-height: 1.2;
+}
+
+.equiticket .equiticket-checked-in__time {
+	margin-top: 4px !important;
+	font-size: 1.05em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-checked-in__note {
+	margin-top: 6px !important;
+	font-size: 0.92em;
+}
+
+.equiticket .equiticket-cancel {
+	margin: 18px 0 0;
+}
+
+.equiticket .equiticket-cancel .equiticket-button {
+	width: 100%;
+}
+
+/* 空き状況の目安 */
+.equiticket .equiticket-overview {
+	margin: 24px 0 0;
+	padding: 16px 0 0;
+	border-top: 1px solid var(--et-border);
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-overview h3 {
+	margin: 0 0 8px;
+	font-size: 1em;
+}
+
+.equiticket .equiticket-overview h4 {
+	margin: 14px 0 6px;
+	font-size: 0.95em;
+	color: var(--et-muted);
+}
+
+.equiticket .equiticket-overview ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.equiticket .equiticket-overview li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 7px 0;
+	border-bottom: 1px solid var(--et-border);
+}
+
+.equiticket-overview__time {
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+}
+
+.equiticket-overview__state {
+	color: var(--et-muted);
+	text-align: right;
+}
+
+/* 受付画面 */
+.equiticket--checkin .equiticket-scanner {
+	margin: 0 0 18px;
+}
+
+/*
+ * カメラ映像の枠。
+ * iOS Safari は映像が表示されていない（高さ 0 など）と再生を止めてしまい、
+ * フレームが取れなくなるため、aspect-ratio ではなく padding で高さを確保する
+ * （aspect-ratio は iOS 14 以前で効かない）。
+ */
+.equiticket .equiticket-scanner__viewport {
+	position: relative;
+	width: 100%;
+	max-width: 440px;
+	margin: 0 auto;
+	padding-top: 75%; /* 4:3 */
+	min-height: 200px;
+	border-radius: var(--et-radius);
+	background: #111;
+	overflow: hidden;
+}
+
+.equiticket .equiticket-scanner__viewport video {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #111;
+	object-fit: cover;
+}
+
+/* 読み取り位置の目安になる枠 */
+.equiticket .equiticket-scanner__frame {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 62%;
+	padding-top: 62%;
+	transform: translate(-50%, -50%);
+	border: 3px solid rgba(255, 255, 255, 0.85);
+	border-radius: 14px;
+	box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.28);
+	pointer-events: none;
+}
+
+.equiticket-scanner--live .equiticket-scanner__frame {
+	border-color: #6ee7a8;
+}
+
+/* 読み取った結果をカメラ映像の上に重ねて出す */
+.equiticket .equiticket-scanner__flash {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 16px;
+	background: rgba(31, 122, 63, 0.94);
+	color: #fff;
+	text-align: center;
+	cursor: pointer;
+	animation: equiticket-flash-in 0.15s ease-out;
+}
+
+.equiticket .equiticket-scanner__flash[hidden] {
+	display: none;
+}
+
+.equiticket .equiticket-scanner__flash--already {
+	background: rgba(183, 121, 0, 0.95);
+}
+
+.equiticket .equiticket-scanner__flash--not_found,
+.equiticket .equiticket-scanner__flash--invalid,
+.equiticket .equiticket-scanner__flash--error {
+	background: rgba(179, 45, 46, 0.95);
+}
+
+.equiticket .equiticket-scanner__flash--cancelled,
+.equiticket .equiticket-scanner__flash--no_show {
+	background: rgba(75, 85, 99, 0.95);
+}
+
+.equiticket .equiticket-scanner__flash p {
+	margin: 0;
+	color: inherit;
+}
+
+.equiticket .equiticket-scanner__flash-headline {
+	font-size: 1.9em;
+	font-weight: 800;
+	line-height: 1.2;
+}
+
+.equiticket .equiticket-scanner__flash-person {
+	font-size: 1.35em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-scanner__flash-line {
+	font-size: 1.1em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-scanner__flash-detail {
+	font-size: 0.95em;
+}
+
+.equiticket .equiticket-scanner__flash-hint {
+	margin-top: 8px !important;
+	font-size: 0.8em;
+	opacity: 0.85;
+}
+
+@keyframes equiticket-flash-in {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.equiticket .equiticket-scanner__status {
+	margin: 12px 0;
+	color: var(--et-muted);
+	font-size: 0.9em;
+	line-height: 1.6;
+	text-align: center;
+}
+
+.equiticket .equiticket-scanner__buttons,
+.equiticket .equiticket-scanner__photo {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+	margin: 0 0 10px;
+}
+
+.equiticket .equiticket-scanner__photo label {
+	display: inline-flex;
+}
+
+.equiticket .equiticket-result,
+.equiticket .equiticket-scanner__result:not(:empty) {
+	margin: 16px 0;
+	padding: 18px 16px;
+	border: 2px solid var(--et-border);
+	border-radius: var(--et-radius);
+	text-align: center;
+}
+
+.equiticket .equiticket-result--ok {
+	border-color: #1f7a3f;
+	background: #e9f6ee;
+}
+
+.equiticket .equiticket-result--already {
+	border-color: #d59b00;
+	background: var(--et-warning-soft);
+}
+
+.equiticket .equiticket-result--not_found,
+.equiticket .equiticket-result--invalid,
+.equiticket .equiticket-result--error {
+	border-color: var(--et-danger);
+	background: var(--et-danger-soft);
+}
+
+.equiticket .equiticket-result--cancelled,
+.equiticket .equiticket-result--no_show {
+	border-color: #6b7280;
+	background: #f1f3f4;
+}
+
+.equiticket .equiticket-result__headline {
+	margin: 0 0 6px;
+	font-size: 2.1em;
+	font-weight: 800;
+	line-height: 1.15;
+}
+
+.equiticket .equiticket-result__person {
+	margin: 0 0 4px;
+	font-size: 1.3em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-result__horse,
+.equiticket .equiticket-result__fee {
+	margin: 0 0 4px;
+	font-size: 1.1em;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-result__fee {
+	color: var(--et-accent-strong);
+}
+
+.equiticket .equiticket-result__slot,
+.equiticket .equiticket-result__detail {
+	margin: 0;
+	color: var(--et-muted);
+	font-size: 0.92em;
+}
+
+.equiticket .equiticket-result .equiticket-button {
+	margin-top: 12px;
+}
+
+.equiticket .equiticket-manual,
+.equiticket .equiticket-search,
+.equiticket .equiticket-recent {
+	margin: 22px 0 0;
+	padding: 18px 0 0;
+	border-top: 1px solid var(--et-border);
+}
+
+.equiticket .equiticket-manual h3,
+.equiticket .equiticket-search h3,
+.equiticket .equiticket-recent h3 {
+	margin: 0 0 8px;
+	font-size: 1.05em;
+}
+
+.equiticket .equiticket-manual form p,
+.equiticket .equiticket-search form p {
+	margin: 0 0 10px;
+}
+
+.equiticket .equiticket-search__results {
+	margin: 12px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.equiticket .equiticket-search__results li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	padding: 12px 0;
+	border-bottom: 1px solid var(--et-border);
+}
+
+.equiticket-search__name {
+	font-size: 1.05em;
+	font-weight: 700;
+}
+
+.equiticket-search__meta {
+	color: var(--et-muted);
+	font-size: 0.88em;
+}
+
+.equiticket .equiticket-search__results form {
+	margin: 0 0 0 auto;
+}
+
+.equiticket .equiticket-recent ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	color: var(--et-muted);
+	font-size: 0.9em;
+}
+
+.equiticket .equiticket-recent li {
+	padding: 4px 0;
+	border-bottom: 1px dotted var(--et-border);
+	font-variant-numeric: tabular-nums;
+}
+
+/* カメラの状態（うまく動かないときの手がかり） */
+.equiticket .equiticket-diag {
+	margin: 18px 0 0;
+	padding: 12px 14px;
+	border: 1px solid var(--et-border);
+	border-radius: var(--et-radius-sm);
+	background: var(--et-surface-alt);
+	font-size: 0.82em;
+	color: var(--et-muted);
+}
+
+.equiticket .equiticket-diag summary {
+	cursor: pointer;
+	font-weight: 700;
+}
+
+.equiticket .equiticket-diag dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 4px 12px;
+	margin: 10px 0 0;
+}
+
+.equiticket .equiticket-diag dt {
+	white-space: nowrap;
+}
+
+.equiticket .equiticket-diag dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+/* 予約ページ未設定時の単体表示 */
+body.equiticket-standalone {
+	margin: 0;
+	padding: 20px 12px 40px;
+	background: #eef1f2;
+	color: #1f2933;
+	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+}
+
+/* 狭い画面の調整 */
+@media ( max-width: 400px ) {
+	.equiticket {
+		padding: 16px 12px 20px;
+	}
+
+	.equiticket .equiticket-steps__item {
+		font-size: 0.62em;
+	}
+
+	.equiticket-slot__time {
+		font-size: 1.1em;
+	}
+
+	.equiticket .equiticket-slot .equiticket-button,
+	.equiticket .equiticket-slot__form {
+		width: 100%;
+	}
+
+	.equiticket .equiticket-slot .equiticket-button {
+		width: 100%;
+	}
+}
